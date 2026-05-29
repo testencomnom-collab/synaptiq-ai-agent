@@ -49,6 +49,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
 
     val activeProviderFlow = MutableStateFlow(preferencesManager.activeProvider)
     val activeModelFlow = MutableStateFlow(preferencesManager.getActiveModel())
+    val downloadedAgentsFlow = MutableStateFlow(preferencesManager.downloadedLocalAgents)
 
     init {
         // Seed some starter emails for the simulated Inbox if empty
@@ -109,6 +110,21 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
     fun updateModel(modelName: String) {
         preferencesManager.selectedModel = modelName
         activeModelFlow.value = modelName
+    }
+
+    fun downloadAgent(agentId: String) {
+        viewModelScope.launch {
+            statusMessage.value = "Downloading $agentId..."
+            // Simulate download delay
+            kotlinx.coroutines.delay(2000)
+            
+            val currentSet = preferencesManager.downloadedLocalAgents.toMutableSet()
+            currentSet.add(agentId)
+            preferencesManager.downloadedLocalAgents = currentSet
+            downloadedAgentsFlow.value = currentSet
+            
+            statusMessage.value = "$agentId successfully installed locally."
+        }
     }
 
     fun sendMessage(query: String) {

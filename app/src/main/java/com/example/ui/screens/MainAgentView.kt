@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.ChatMessage
 import com.example.data.model.EmailItem
+import com.example.data.model.LocalAgentRepository
 import com.example.services.CalendarEvent
 import com.example.services.CalendarManager
 import com.example.ui.AgentViewModel
@@ -111,6 +112,12 @@ fun MainAgentView(
                     label = { Text("Schedule") }
                 )
                 NavigationBarItem(
+                    selected = currentTab == "library",
+                    onClick = { currentTab = "library" },
+                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Library") },
+                    label = { Text("Library") }
+                )
+                NavigationBarItem(
                     selected = currentTab == "settings",
                     onClick = { currentTab = "settings" },
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
@@ -130,6 +137,7 @@ fun MainAgentView(
                 "chat" -> AgentChatTab(viewModel, hasCalendarPerms, onRequestPermissions = { requestCalendarPermissions() })
                 "inbox" -> SimulatedInboxTab(viewModel, onNavigateToChat = { currentTab = "chat" })
                 "calendar" -> SystemCalendarTab(viewModel, hasCalendarPerms, onRequestPermissions = { requestCalendarPermissions() })
+                "library" -> AgentLibraryTab(viewModel)
                 "settings" -> AgentSettingsTab(
                     viewModel = viewModel,
                     hasCalendarPerms = hasCalendarPerms,

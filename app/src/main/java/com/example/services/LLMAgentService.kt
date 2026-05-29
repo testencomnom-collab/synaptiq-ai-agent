@@ -91,6 +91,16 @@ class LLMAgentService(
         val dateFormat = SimpleDateFormat("EEEE, MMMM dd, yyyy h:mm a", Locale.getDefault())
         val currentDateTimeStr = dateFormat.format(Date())
 
+        val downloadedAgentIds = preferencesManager.downloadedLocalAgents
+        val localAgentsStr = if (downloadedAgentIds.isEmpty()) {
+            "No local agents installed yet."
+        } else {
+            val allAgents = com.example.data.model.LocalAgentRepository.agents
+            downloadedAgentIds.mapNotNull { id ->
+                allAgents.find { it.id == id }?.let { "- ${it.name} (${it.category}): ${it.description}" }
+            }.joinToString("\n")
+        }
+
         val systemPrompt = """
             You are an advanced On-Device AI Agent. You assist the user with everyday assistant actions on their phone, including reading/answering emails and booking calendar events based on their direct calendar availability.
             
@@ -102,6 +112,10 @@ class LLMAgentService(
             
             --- RECENT SIMULATED USER INBOX EMAILS ---
             $inboxDetails
+            -----------------------------------------
+            
+            --- AVAILABLE LOCAL PLUGINS/AGENTS ---
+            $localAgentsStr
             -----------------------------------------
             
             Based on the user's request, perform the necessary agent tasks. 
