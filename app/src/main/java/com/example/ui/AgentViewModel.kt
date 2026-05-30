@@ -121,7 +121,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
             downloadingAgents.value = downloadingAgents.value.toMutableMap().apply { put(agentId, 0f) }
             
             // Standard MediaPipe Gemma 2B INT4 URL
-            val modelUrl = "https://storage.googleapis.com/mediapipe-models/llm_inference/gemma_2b_it_cpu_int4/1/gemma_2b_it_cpu_int4.bin"
+            val modelUrl = "https://huggingface.co/metsman/gemma-2b-it-cpu-int4-org/resolve/main/gemma-2b-it-cpu-int4.bin"
             val modelFileName = "gemma_2b_it_cpu_int4.bin"
             val modelFile = java.io.File(getApplication<Application>().filesDir, modelFileName)
             
