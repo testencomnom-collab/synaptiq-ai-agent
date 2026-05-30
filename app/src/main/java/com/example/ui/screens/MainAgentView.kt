@@ -1959,9 +1959,46 @@ fun AgentSettingsTab(
             }
         }
 
-        // --- System Access (Debugging / Admin) ---
+        // --- System Access (Admin) ---
         item {
             val context = androidx.compose.ui.platform.LocalContext.current
+            val dpm = context.getSystemService(android.content.Context.DEVICE_POLICY_SERVICE) as android.app.admin.DevicePolicyManager
+            val isAdmin = dpm.isAdminActive(android.content.ComponentName(context, com.example.permissions.MyDeviceAdminReceiver::class.java))
+            
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ),
+                shape = RoundedCornerShape(24.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.AdminPanelSettings,
+                            contentDescription = "System Access",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Erweiterter Systemzugriff",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        "Damit der KI Agent vollständig auf Systemfunktionen zugreifen und diese automatisieren kann, muss die App als Geräteadministrator konfiguriert werden.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+
                     // Device Administrator Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
