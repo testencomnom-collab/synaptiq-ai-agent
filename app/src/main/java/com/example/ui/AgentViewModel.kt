@@ -121,11 +121,16 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
             downloadingAgents.value = downloadingAgents.value.toMutableMap().apply { put(agentId, 0f) }
             
             // Standard MediaPipe Gemma 2B INT4 URL
-            val modelUrl = "https://huggingface.co/metsman/gemma-2b-it-cpu-int4-org/resolve/main/gemma-2b-it-cpu-int4.bin"
+            val modelUrl = "https://huggingface.co/metsman/gemma-2b-it-cpu-int4-org/resolve/main/gemma-2b-it-cpu-int4.bin?download=true"
             val modelFileName = "gemma_2b_it_cpu_int4.bin"
             val modelFile = java.io.File(getApplication<Application>().filesDir, modelFileName)
             
             var requestSuccess = false
+            
+            // Delete file if it's a small corrupted file (e.g. Git LFS pointer < 1 GB)
+            if (modelFile.exists() && modelFile.length() < 1000L * 1024L * 1024L) {
+                modelFile.delete()
+            }
             
             if (!modelFile.exists()) {
                 try {
