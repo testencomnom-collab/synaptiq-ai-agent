@@ -68,14 +68,16 @@ fun AnimatedLiquidBackground(modifier: Modifier = Modifier) {
     val color2 = Color(0xFF1E1432)
     val color3 = Color(0xFF152A34)
 
+    val backgroundBrush = remember {
+        Brush.verticalGradient(
+            colors = listOf(color1, color2, color3, color1)
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(color1, color2, color3, color1)
-                )
-            )
+            .background(backgroundBrush)
             .background(Color.Black.copy(alpha = 0.2f))
     )
 }
@@ -604,7 +606,7 @@ fun AgentChatTab(
                     }
                 }
             } else {
-                items(chatHistory) { message ->
+                items(items = chatHistory, key = { it.id }) { message ->
                     ChatMessageBubble(message, onExecuteAction = {
                         viewModel.executeProposedAction(message)
                     })
@@ -739,6 +741,14 @@ fun ChatMessageBubble(
     )
     val textCol = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface
 
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+    val userBackgroundBrush = remember(primaryColor, secondaryColor) {
+        Brush.linearGradient(
+            colors = listOf(primaryColor, secondaryColor)
+        )
+    }
+
     var showThoughts by remember { mutableStateOf(false) }
 
     Column(
@@ -764,14 +774,7 @@ fun ChatMessageBubble(
                     .clip(shape)
                     .then(
                         if (isUser) {
-                            Modifier.background(
-                                Brush.linearGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.primary,
-                                        MaterialTheme.colorScheme.secondary
-                                    )
-                                )
-                            )
+                            Modifier.background(userBackgroundBrush)
                         } else {
                             Modifier.background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
                         }
