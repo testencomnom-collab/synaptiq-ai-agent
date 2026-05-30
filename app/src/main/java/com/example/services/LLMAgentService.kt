@@ -285,8 +285,8 @@ class LLMAgentService(
             var subject: String? = null
             var body: String? = null
 
-            if (json.has("emailAction")) {
-                val emailObj = json.getJSONObject("emailAction")
+            val emailObj = json.optJSONObject("emailAction")
+            if (emailObj != null) {
                 recipient = emailObj.optString("recipient")
                 subject = emailObj.optString("subject")
                 body = emailObj.optString("body")
@@ -297,8 +297,8 @@ class LLMAgentService(
             var startMillisParsed: Long? = null
             var endMillisParsed: Long? = null
 
-            if (json.has("calendarAction")) {
-                val calObj = json.getJSONObject("calendarAction")
+            val calObj = json.optJSONObject("calendarAction")
+            if (calObj != null) {
                 title = calObj.optString("title")
                 desc = calObj.optString("description")
                 val startIso = calObj.optString("startTimeIso")
