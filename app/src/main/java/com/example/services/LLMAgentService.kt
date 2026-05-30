@@ -43,12 +43,34 @@ class LLMAgentService(
     companion object {
         private const val TAG = "LLMAgentService"
     }
+    private val localEngine by lazy { LocalInferenceEngine(context) }
+    private var isLocalEngineReady = false
 
     suspend fun executeAgentQuery(agentId: String, userQuery: String, emailsContext: List<EmailItem>): AgentProposal = withContext(Dispatchers.IO) {
         val activeProvider = preferencesManager.activeProvider
         val apiKey = preferencesManager.getActiveApiKey()
         val model = preferencesManager.getActiveModel()
 
+        if (agentId != "system") {
+            // PFAD B: Local On-Device Mode
+            if (!isLocalEngineReady) {
+                isLocalEngineReady = localEngine.initialize()
+            }
+            
+            val agentConfig = repository.getAgentConfig(agentId)
+            val sysPrompt = agentConfig?.systemPrompt ?: "Du bist ein lokaler Assistent."
+            val fullPrompt = "$sysPrompt\n\nNutzer-Anfrage: $userQuery"
+            
+            val response = localEngine.generateResponse(fullPrompt)
+            return@withContext AgentProposal(
+                thought = "Local On-Device Inference via MediaPipe (${agentConfig?.name ?: agentId})",
+                responseText = response,
+                hasAction = false,
+                actionType = "NONE"
+            )
+        }
+
+        // PFAD A: Cloud Mode (Requires API Key)
         if (apiKey.trim().isEmpty()) {
             return@withContext AgentProposal(
                 thought = "No API key configured.",

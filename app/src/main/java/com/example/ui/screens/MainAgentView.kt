@@ -245,13 +245,27 @@ fun AgentChatTab(
                             )
                             Icon(Icons.Default.ArrowDropDown, contentDescription = "Select Agent")
                         }
-                        Text(
-                            text = if (activeAgentId == "system") "SYSTEM ACTIVE" else "LOCAL OFFLINE",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            letterSpacing = 1.sp
-                        )
+                        if (activeAgentId == "system") {
+                            Text(
+                                text = "SYSTEM ACTIVE",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                letterSpacing = 1.sp
+                            )
+                        } else {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.CloudOff, contentDescription = "Offline", modifier = Modifier.size(12.dp), tint = Color(0xFF10B981))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "OFFLINE-MODUS AKTIV",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF10B981),
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                        }
                         DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }

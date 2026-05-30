@@ -122,9 +122,20 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
 
     fun downloadAgent(agentId: String) {
         viewModelScope.launch {
-            statusMessage.value = "Downloading $agentId..."
-            // Simulate download delay
-            kotlinx.coroutines.delay(2000)
+            statusMessage.value = "Downloading $agentId LLM weights (1.5 GB)..."
+            // Simulate large binary download delay
+            kotlinx.coroutines.delay(3000)
+            statusMessage.value = "Installing MediaPipe Inference Engine..."
+            kotlinx.coroutines.delay(1000)
+            
+            try {
+                val dummyFile = java.io.File(getApplication<Application>().filesDir, "local_model_gemma_2b.bin")
+                if (!dummyFile.exists()) {
+                    dummyFile.writeText("DUMMY_WEIGHTS")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             
             val currentSet = preferencesManager.downloadedLocalAgents.toMutableSet()
             currentSet.add(agentId)
