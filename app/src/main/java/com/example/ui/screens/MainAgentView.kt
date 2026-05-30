@@ -376,7 +376,18 @@ fun AgentChatTab(
         }
 
         // Messages List
+        val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+        // Auto-scroll to bottom when new messages arrive
+        LaunchedEffect(chatHistory.size, isLoading) {
+            if (chatHistory.isNotEmpty()) {
+                // Scroll to the very last item (messages + optional loading indicator)
+                val targetIndex = chatHistory.size - 1 + (if (isLoading) 1 else 0)
+                listState.animateScrollToItem(targetIndex)
+            }
+        }
+
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
@@ -1645,6 +1656,7 @@ fun AgentSettingsTab(
 
     if (statusMsg != null) {
         LaunchedEffect(statusMsg) {
+            kotlinx.coroutines.delay(3000)
             viewModel.clearStatus()
         }
     }

@@ -123,6 +123,12 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
             currentSet.add(agentId)
             preferencesManager.downloadedLocalAgents = currentSet
             downloadedAgentsFlow.value = currentSet
+
+            // Auto-activate the agent so it's immediately usable in chat
+            val activeSet = preferencesManager.activeLocalAgents.toMutableSet()
+            activeSet.add(agentId)
+            preferencesManager.activeLocalAgents = activeSet
+            activeAgentsFlow.value = activeSet
             
             statusMessage.value = "$agentId successfully installed locally."
         }

@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +34,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AgentLibraryTab(viewModel: AgentViewModel) {
     val downloadedAgents by viewModel.downloadedAgentsFlow.collectAsStateWithLifecycle()
+    val activeAgents by viewModel.activeAgentsFlow.collectAsStateWithLifecycle()
     val statusMessage by viewModel.statusMessage.collectAsStateWithLifecycle()
 
     val agentsByCategory = LocalAgentRepository.agents.groupBy { it.category }
@@ -80,7 +80,7 @@ fun AgentLibraryTab(viewModel: AgentViewModel) {
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "${downloadedAgents.size} AKTIV",
+                        text = "${activeAgents.size} AKTIV",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -171,9 +171,9 @@ fun AgentLibraryTab(viewModel: AgentViewModel) {
                     AgentMarketplaceCard(
                         agent = agent,
                         isDownloaded = downloadedAgents.contains(agent.id),
-                        isActive = viewModel.activeAgentsFlow.collectAsStateWithLifecycle().value.contains(agent.id),
+                        isActive = activeAgents.contains(agent.id),
                         onDownloadStart = { viewModel.downloadAgent(agent.id) },
-                        onActiveChange = { isActive -> viewModel.setAgentActive(agent.id, isActive) }
+                        onActiveChange = { active -> viewModel.setAgentActive(agent.id, active) }
                     )
                 }
             }
@@ -209,7 +209,7 @@ fun AgentMarketplaceCard(
         "crewai" -> Icons.Default.People
         "autogen" -> Icons.Default.SettingsSuggest
         "metagpt" -> Icons.Default.Apartment
-        "n8n" -> Icons.Default.AltRoute
+        "n8n" -> Icons.AutoMirrored.Filled.AltRoute
         "langflow" -> Icons.Default.AccountTree
         "smolagents" -> Icons.Default.Bolt
         else -> Icons.Default.SmartToy

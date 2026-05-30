@@ -40,3 +40,28 @@
 
 # AndroidX Security / Tink
 -dontwarn com.google.errorprone.annotations.**
+
+# Keep Kotlin metadata for Moshi reflection
+-keepattributes *Annotation*, Signature, InnerClasses, EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+
+# Keep all API data classes used by Retrofit + Moshi
+-keep class com.example.data.api.** { *; }
+-keep class com.example.services.AgentProposal { *; }
+-keep class com.example.data.model.** { *; }
+
+# Moshi
+-keep class com.squareup.moshi.** { *; }
+-keepclassmembers class * {
+    @com.squareup.moshi.FromJson <methods>;
+    @com.squareup.moshi.ToJson <methods>;
+}
+-keepclassmembers @com.squareup.moshi.JsonClass class * { *; }
+
+# Retrofit
+-keep,allowobfuscation interface * {
+    @retrofit2.http.* <methods>;
+}
+-dontwarn kotlin.Unit
+-dontwarn retrofit2.KotlinExtensions
+-dontwarn retrofit2.KotlinExtensions$*
