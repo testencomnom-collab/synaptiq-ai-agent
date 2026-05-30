@@ -9,6 +9,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -473,134 +479,17 @@ fun AgentChatTab(
 
             if (isLoading) {
                 item {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        ),
-                        shape = RoundedCornerShape(24.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .animateContentSize()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(0.85f).padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.Start
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(36.dp)
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .background(MaterialTheme.colorScheme.primaryContainer),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.size(18.dp),
-                                            strokeWidth = 2.5.dp,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text(
-                                            "Aktiver Automatisierungs-Task",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 14.sp,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                        Text(
-                                            "Der Agent verarbeitet Befehle...",
-                                            fontSize = 11.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                                
-                                // Elegant Status Pill
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(50))
-                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        "REASONING",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                            
-                            Spacer(modifier = Modifier.height(14.dp))
-                            
-                            // Seal-style background automation details
-                            LinearProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(6.dp)
-                                    .clip(RoundedCornerShape(3.dp)),
-                                color = MaterialTheme.colorScheme.primary,
-                                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                            )
-                            
-                            Spacer(modifier = Modifier.height(12.dp))
-                            
-                            // Expandable Terminal Log Window
-                            var showTerminalLogs by remember { mutableStateOf(true) }
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF0F0E13))
-                                    .border(1.dp, Color(0xFF23212C), RoundedCornerShape(12.dp))
-                                    .clickable { showTerminalLogs = !showTerminalLogs }
-                                    .padding(12.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            Icons.Default.Terminal,
-                                            contentDescription = "Terminal Logs",
-                                            tint = MaterialTheme.colorScheme.tertiary,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(
-                                            "Agenten-Denkprozess & Logs",
-                                            fontFamily = FontFamily.Monospace,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 10.sp,
-                                            color = MaterialTheme.colorScheme.tertiary
-                                        )
-                                    }
-                                    Icon(
-                                        if (showTerminalLogs) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                        contentDescription = "Toggle Logs",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                }
-                                if (showTerminalLogs) {
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = "> Initialisiere LLM-Modell...\n> Analysiere Berechtigungen und Kontext...\n> Delegiere an lokalen Automatisierungs-Subagenten...\n> Warte auf Systemantwort...",
-                                        fontSize = 11.sp,
-                                        fontFamily = FontFamily.Monospace,
-                                        lineHeight = 16.sp,
-                                        color = Color(0xFF10B981) // Matrix Green
-                                    )
-                                }
-                            }
-                        }
+                        Icon(
+                            Icons.Default.SupportAgent,
+                            contentDescription = "Agent",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(28.dp).padding(end = 6.dp, top = 2.dp)
+                        )
+                        TypingIndicatorBubble()
                     }
                 }
             }
@@ -2097,3 +1986,41 @@ private fun formatTime(timestamp: Long): String {
     return sdf.format(Date(timestamp))
 }
 
+@Composable
+fun TypingIndicatorBubble() {
+    val infiniteTransition = rememberInfiniteTransition(label = "typing")
+    val dot1Alpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(400, delayMillis = 0, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = "dot1"
+    )
+    val dot2Alpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(400, delayMillis = 200, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = "dot2"
+    )
+    val dot3Alpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(400, delayMillis = 400, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = "dot3"
+    )
+
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(24.dp, 24.dp, 24.dp, 6.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(modifier = Modifier.size(6.dp).clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = dot1Alpha)))
+        Box(modifier = Modifier.size(6.dp).clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = dot2Alpha)))
+        Box(modifier = Modifier.size(6.dp).clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = dot3Alpha)))
+    }
+}
