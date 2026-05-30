@@ -12,6 +12,7 @@ import com.example.data.database.AppDatabase
 import com.example.data.model.ChatMessage
 import com.example.data.model.NotificationItem
 import com.example.data.repository.AgentRepository
+import com.example.services.AgentAccessibilityService
 import com.example.services.CalendarManager
 import com.example.services.LLMAgentService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -261,7 +262,12 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     if (proposal.systemActionApp != null) {
                         put("systemActionApp", proposal.systemActionApp)
-                        put("systemActionInstruction", proposal.systemActionInstruction ?: "")
+                    }
+                    if (proposal.systemActionRecipient != null) {
+                        put("recipient", proposal.systemActionRecipient)
+                    }
+                    if (proposal.systemActionInstruction != null) {
+                        put("instruction", proposal.systemActionInstruction)
                     }
                 }
                 actionDataJson = actionObj.toString()
@@ -349,7 +355,10 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
                 // Executing System Action Block
                 if (type == "SYSTEM_ACTION" || type == "BOTH") {
                     val sysApp = json.optString("systemActionApp", "")
-                    val sysInstruction = json.optString("systemActionInstruction", "")
+                    val sysRecipient = json.optString("recipient", "")
+                    val sysInstruction = json.optString("instruction", "")
+                    // fallback to old field name if needed
+                    val finalInstruction = if (sysInstruction.isEmpty()) json.optString("systemActionInstruction", "") else sysInstruction
                     if (sysApp.isNotEmpty()) {
                         val app = getApplication<Application>()
                         val pm = app.packageManager
@@ -394,12 +403,22 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
                                     "com.facebook.orca", "com.twitter.android"
                                 )
 
-                                if (targetPackage in messagingApps && sysInstruction.isNotEmpty()) {
+                                if (targetPackage in messagingApps && finalInstruction.isNotEmpty()) {
+                                    // Set Automation State for Accessibility Service auto-clicker
+                                    if (sysRecipient.isNotEmpty()) {
+                                        AgentAccessibilityService.AutomationState.isRunning = true
+                                        AgentAccessibilityService.AutomationState.targetApp = targetPackage
+                                        AgentAccessibilityService.AutomationState.recipient = sysRecipient
+                                        AgentAccessibilityService.AutomationState.step = 1
+                                    } else {
+                                        AgentAccessibilityService.AutomationState.isRunning = false
+                                    }
+
                                     // Use share intent to send text to the app
                                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                         setType("text/plain")
                                         setPackage(targetPackage)
-                                        putExtra(Intent.EXTRA_TEXT, sysInstruction)
+                                        putExtra(Intent.EXTRA_TEXT, finalInstruction)
                                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                     }
                                     try {

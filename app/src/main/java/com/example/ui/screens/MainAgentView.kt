@@ -891,6 +891,7 @@ fun ProposedActionBlock(
     var calendarStart = 0L
     var calendarEnd = 0L
     var systemActionApp = ""
+    var systemActionRecipient = ""
     var systemActionInstruction = ""
 
     try {
@@ -905,7 +906,11 @@ fun ProposedActionBlock(
         calendarEnd = json.optLong("calendarEnd", 0L)
 
         systemActionApp = json.optString("systemActionApp", "")
-        systemActionInstruction = json.optString("systemActionInstruction", "")
+        systemActionRecipient = json.optString("recipient", "")
+        systemActionInstruction = json.optString("instruction", "")
+        if (systemActionInstruction.isEmpty()) {
+            systemActionInstruction = json.optString("systemActionInstruction", "")
+        }
     } catch (e: Exception) {
         Log.e("ProposedActionBlock", "Parsing failed", e)
     }
@@ -1038,6 +1043,10 @@ fun ProposedActionBlock(
                     ) {
                         Column(modifier = Modifier.padding(8.dp)) {
                             Text("Target App: $systemActionApp", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            if (systemActionRecipient.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("Recipient: $systemActionRecipient", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                            }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text("Sequence: $systemActionInstruction", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }

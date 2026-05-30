@@ -34,6 +34,7 @@ data class AgentProposal(
     val calendarStartMillis: Long? = null,
     val calendarEndMillis: Long? = null,
     val systemActionApp: String? = null,
+    val systemActionRecipient: String? = null,
     val systemActionInstruction: String? = null
 )
 
@@ -190,8 +191,8 @@ class LLMAgentService(
             Based on the user's request, perform the necessary agent tasks. 
             - If they ask to reply to or draft an email, compose the email response (recipient, subject, body).
             - If they ask to schedule an event or meeting, analyze their calendar availability to find an open date/time that DOES NOT conflict with existing events.
-            - If they ask to send a message via an app (Snapchat, WhatsApp, Instagram, Telegram, Discord, etc.), use "SYSTEM_ACTION". Put the app name in "targetApp" and the ACTUAL MESSAGE TEXT they want to send in "instruction". Do NOT put UI navigation steps - just put the message content itself.
-            - If they ask to open any app, use "SYSTEM_ACTION" with the app name in "targetApp" and leave "instruction" empty.
+            - If they ask to send a message via an app (Snapchat, WhatsApp, Instagram, Telegram, Discord, etc.), use "SYSTEM_ACTION". Put the app name in "targetApp", the person they want to send it to in "recipient", and the ACTUAL MESSAGE TEXT they want to send in "instruction". Do NOT put UI navigation steps - just put the message content itself.
+            - If they ask to open any app, use "SYSTEM_ACTION" with the app name in "targetApp" and leave "instruction" and "recipient" empty.
             
             You MUST return your entire output as a strictly valid, parsable JSON object. Do not include any markdown backticks, explanations outside the JSON, or leading/trailing text. The JSON structure MUST be:
             {
@@ -212,6 +213,7 @@ class LLMAgentService(
                },
                "systemAction": {
                   "targetApp": "Simple app name like 'Snapchat', 'WhatsApp', 'Instagram', 'Telegram', 'Discord', 'YouTube', 'Chrome', 'Settings', 'Camera', 'TikTok', 'Spotify'",
+                  "recipient": "The name of the friend/contact, or empty string if not applicable",
                   "instruction": "The actual message text to send, or empty string if just opening the app"
                }
             }
@@ -336,11 +338,13 @@ class LLMAgentService(
             }
 
             var sysApp: String? = null
+            var sysRecipient: String? = null
             var sysInstruction: String? = null
 
             val sysObj = json.optJSONObject("systemAction")
             if (sysObj != null) {
                 sysApp = sysObj.optString("targetApp")
+                sysRecipient = sysObj.optString("recipient")
                 sysInstruction = sysObj.optString("instruction")
             }
 
@@ -357,6 +361,7 @@ class LLMAgentService(
                 calendarStartMillis = startMillisParsed,
                 calendarEndMillis = endMillisParsed,
                 systemActionApp = sysApp,
+                systemActionRecipient = sysRecipient,
                 systemActionInstruction = sysInstruction
             )
 
