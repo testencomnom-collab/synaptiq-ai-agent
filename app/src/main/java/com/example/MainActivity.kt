@@ -31,22 +31,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         var existingCrash: String? = null
-        try {
-            val file = java.io.File(applicationContext.filesDir, "crash_log.txt")
-            if (file.exists()) {
-                existingCrash = file.readText()
-                file.delete()
-            }
-        } catch (e: Exception) {}
-        if (existingCrash != null) {
-            crashError.value = existingCrash
-        }
 
         Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
-            android.util.Log.e("MainActivity", "Uncaught exception", throwable)
-            try {
-                java.io.File(applicationContext.filesDir, "crash_log.txt").writeText(throwable.stackTraceToString())
-            } catch (e: Exception) {}
+            if (com.example.BuildConfig.DEBUG) {
+                android.util.Log.e("MainActivity", "Uncaught exception", throwable)
+            }
             android.os.Process.killProcess(android.os.Process.myPid())
             kotlin.system.exitProcess(1)
         }

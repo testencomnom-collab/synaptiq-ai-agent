@@ -62,7 +62,7 @@ interface LLMApi {
     @POST("v1beta/models/{model}:generateContent")
     suspend fun getGeminiCompletion(
         @Path("model") model: String,
-        @Query("key") apiKey: String,
+        @Header("x-goog-api-key") apiKey: String,
         @Body request: GeminiRequest
     ): Response<GeminiResponse>
 }

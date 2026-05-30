@@ -217,8 +217,10 @@ class LLMAgentService(
                         response.body()?.choices?.firstOrNull()?.message?.content ?: ""
                     } else {
                         val errorBody = response.errorBody()?.string() ?: ""
-                        Log.e(TAG, "OpenAI Error: $errorBody")
-                        throw Exception("OpenAI API failed: ${response.code()} ${response.message()}\n$errorBody")
+                        if (com.example.BuildConfig.DEBUG) {
+                            Log.e(TAG, "OpenAI Error: $errorBody")
+                        }
+                        throw Exception("OpenAI API failed: ${response.code()} ${response.message()}")
                     }
                 }
                 "ANTHROPIC" -> {
@@ -233,8 +235,10 @@ class LLMAgentService(
                         response.body()?.content?.firstOrNull()?.text ?: ""
                     } else {
                         val errorBody = response.errorBody()?.string() ?: ""
-                        Log.e(TAG, "Anthropic Error: $errorBody")
-                        throw Exception("Anthropic API failed: ${response.code()} ${response.message()}\n$errorBody")
+                        if (com.example.BuildConfig.DEBUG) {
+                            Log.e(TAG, "Anthropic Error: $errorBody")
+                        }
+                        throw Exception("Anthropic API failed: ${response.code()} ${response.message()}")
                     }
                 }
                 "GEMINI" -> {
@@ -252,8 +256,10 @@ class LLMAgentService(
                         response.body()?.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: ""
                     } else {
                         val errorBody = response.errorBody()?.string() ?: ""
-                        Log.e(TAG, "Gemini Error: $errorBody")
-                        throw Exception("Gemini API failed: ${response.code()} ${response.message()}\n$errorBody")
+                        if (com.example.BuildConfig.DEBUG) {
+                            Log.e(TAG, "Gemini Error: $errorBody")
+                        }
+                        throw Exception("Gemini API failed: ${response.code()} ${response.message()}")
                     }
                 }
                 else -> throw Exception("Unknown LLM Provider selected.")
@@ -265,7 +271,9 @@ class LLMAgentService(
                 .removeSuffix("```")
                 .trim()
 
-            Log.d(TAG, "Full AI Response text: $cleanJson")
+            if (com.example.BuildConfig.DEBUG) {
+                Log.d(TAG, "Full AI Response text: $cleanJson")
+            }
 
             val json = JSONObject(cleanJson)
             val thought = json.optString("thought", "Analyzed user instructions.")
