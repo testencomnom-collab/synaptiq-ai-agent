@@ -8,7 +8,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-Material3-4285F4?logo=jetpack-compose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Download APK](https://img.shields.io/badge/Download-Latest_APK-FF4500?style=for-the-badge&logo=android)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/on-device-agent-v1.0.0.apk)
+[![Download APK](https://img.shields.io/badge/Download-Latest_APK-FF4500?style=for-the-badge&logo=android)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/on-device-agent-V2.apk)
 
 </div>
 
