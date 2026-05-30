@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.MasterKey
 import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.core.content.edit
 
 class PreferencesManager(context: Context) {
     private val masterKey = MasterKey.Builder(context)
@@ -31,35 +32,35 @@ class PreferencesManager(context: Context) {
 
     var agentLanguage: String
         get() = prefs.getString(KEY_AGENT_LANGUAGE, "Deutsch") ?: "Deutsch"
-        set(value) = prefs.edit().putString(KEY_AGENT_LANGUAGE, value).apply()
+        set(value) = prefs.edit { putString(KEY_AGENT_LANGUAGE, value) }
 
     var openAiApiKey: String
         get() = prefs.getString(KEY_OPENAI_API_KEY, "") ?: ""
-        set(value) = prefs.edit().putString(KEY_OPENAI_API_KEY, value).apply()
+        set(value) = prefs.edit { putString(KEY_OPENAI_API_KEY, value) }
 
     var anthropicApiKey: String
         get() = prefs.getString(KEY_ANTHROPIC_API_KEY, "") ?: ""
-        set(value) = prefs.edit().putString(KEY_ANTHROPIC_API_KEY, value).apply()
+        set(value) = prefs.edit { putString(KEY_ANTHROPIC_API_KEY, value) }
 
     var geminiApiKey: String
         get() = prefs.getString(KEY_GEMINI_API_KEY, "") ?: ""
-        set(value) = prefs.edit().putString(KEY_GEMINI_API_KEY, value).apply()
+        set(value) = prefs.edit { putString(KEY_GEMINI_API_KEY, value) }
 
     var activeProvider: String
         get() = prefs.getString(KEY_ACTIVE_PROVIDER, "OPENAI") ?: "OPENAI"
-        set(value) = prefs.edit().putString(KEY_ACTIVE_PROVIDER, value).apply()
+        set(value) = prefs.edit { putString(KEY_ACTIVE_PROVIDER, value) }
 
     var selectedModel: String
         get() = prefs.getString(KEY_SELECTED_MODEL, "") ?: ""
-        set(value) = prefs.edit().putString(KEY_SELECTED_MODEL, value).apply()
+        set(value) = prefs.edit { putString(KEY_SELECTED_MODEL, value) }
 
     var downloadedLocalAgents: Set<String>
         get() = prefs.getString(KEY_DOWNLOADED_AGENTS, "")?.split(",")?.filter { it.isNotEmpty() }?.toSet() ?: emptySet()
-        set(value) = prefs.edit().putString(KEY_DOWNLOADED_AGENTS, value.joinToString(",")).apply()
+        set(value) = prefs.edit { putString(KEY_DOWNLOADED_AGENTS, value.joinToString(",")) }
 
     var activeLocalAgents: Set<String>
         get() = prefs.getString(KEY_ACTIVE_AGENTS, "")?.split(",")?.filter { it.isNotEmpty() }?.toSet() ?: emptySet()
-        set(value) = prefs.edit().putString(KEY_ACTIVE_AGENTS, value.joinToString(",")).apply()
+        set(value) = prefs.edit { putString(KEY_ACTIVE_AGENTS, value.joinToString(",")) }
 
     fun getActiveApiKey(): String {
         return when (activeProvider) {

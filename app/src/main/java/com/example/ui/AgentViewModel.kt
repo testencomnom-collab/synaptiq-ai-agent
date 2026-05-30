@@ -3,6 +3,7 @@ package com.example.ui
 import android.app.Application
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
@@ -342,7 +343,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
                 if (type == "EMAIL" || type == "BOTH") {
                     if (rec.isNotEmpty()) {
                         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = Uri.parse("mailto:")
+                            data = "mailto:".toUri()
                             putExtra(Intent.EXTRA_EMAIL, arrayOf(rec))
                             putExtra(Intent.EXTRA_SUBJECT, subj)
                             putExtra(Intent.EXTRA_TEXT, body)

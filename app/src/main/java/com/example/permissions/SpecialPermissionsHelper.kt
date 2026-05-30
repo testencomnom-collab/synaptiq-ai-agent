@@ -7,6 +7,7 @@ import android.os.Process
 import android.provider.Settings
 import android.text.TextUtils
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.net.toUri
 import com.example.services.AgentAccessibilityService
 
 object SpecialPermissionsHelper {
@@ -58,11 +59,20 @@ object SpecialPermissionsHelper {
      */
     fun isUsageStatsEnabled(context: Context): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.checkOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            Process.myUid(),
-            context.packageName
-        )
+        val mode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            appOps.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                Process.myUid(),
+                context.packageName
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            appOps.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                Process.myUid(),
+                context.packageName
+            )
+        }
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
@@ -112,24 +122,24 @@ object SpecialPermissionsHelper {
     }
 
     fun getOverlaySettingsIntent(context: Context): Intent {
-        return Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:${context.packageName}")).apply {
+        return Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${context.packageName}".toUri()).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
     }
 
     fun getWriteSettingsIntent(context: Context): Intent {
-        return Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, android.net.Uri.parse("package:${context.packageName}")).apply {
+        return Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, "package:${context.packageName}".toUri()).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
     }
 
     fun getManageStorageIntent(context: Context): Intent {
         return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, android.net.Uri.parse("package:${context.packageName}")).apply {
+            Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, "package:${context.packageName}".toUri()).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
         } else {
-            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:${context.packageName}")).apply {
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${context.packageName}".toUri()).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
         }

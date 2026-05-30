@@ -31,11 +31,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         var existingCrash: String? = null
+        val existingHandler = Thread.getDefaultUncaughtExceptionHandler()
 
-        Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             if (com.example.BuildConfig.DEBUG) {
                 android.util.Log.e("MainActivity", "Uncaught exception", throwable)
             }
+            existingHandler?.uncaughtException(thread, throwable)
             android.os.Process.killProcess(android.os.Process.myPid())
             kotlin.system.exitProcess(1)
         }

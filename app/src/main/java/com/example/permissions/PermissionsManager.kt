@@ -56,7 +56,7 @@ enum class AgentPermission(
         "Read call history for smart call management"
     ),
     BLUETOOTH_CONNECT(
-        android.Manifest.permission.BLUETOOTH_CONNECT,
+        "android.permission.BLUETOOTH_CONNECT",
         "Connect to Bluetooth devices (Smart Home etc.)"
     ),
     READ_EXTERNAL_STORAGE(
