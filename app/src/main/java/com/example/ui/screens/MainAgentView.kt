@@ -57,6 +57,7 @@ import com.example.services.CalendarManager
 import com.example.ui.AgentViewModel
 import com.example.permissions.PermissionsManager
 import com.example.permissions.AgentPermission
+import com.example.permissions.SpecialPermissionsHelper
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.text.SimpleDateFormat
