@@ -29,7 +29,7 @@
 
 ## 🏗️ Architecture Flow
 
-The app dynamically routes your requests either through a real LLM endpoint or a simulated local prompt engine based on the active agent selected in the UI.
+The app dynamically routes your requests either through a real LLM endpoint or a simulated local prompt engine. The heavy lifting for Android Intents and System Automations (Snapchat, Mail, Calendar) is completely decoupled into a dedicated `ActionHandler` and `AgentAccessibilityService`.
 
 ```mermaid
 graph TD;
@@ -40,12 +40,10 @@ graph TD;
     C --> E{Action Intent Detected?};
     D --> E;
     
-    E -- Calendar --> F[Read/Write Android Calendar];
-    E -- Email --> G[Simulate Inbox & Drafts];
+    E -- Calendar --> F[ActionHandler: Read/Write Android Calendar];
+    E -- System Action --> G[ActionHandler: App Launch & Accessibility Automation];
+    E -- Email --> I[ActionHandler: Open Email Composer];
     E -- None --> H[Return Chat Response];
-    
-    I[(Room Database)] -.->|Loads Agent Config| D;
-    I -.->|Persists Chat History| H;
 ```
 
 ---
@@ -73,8 +71,8 @@ You can browse and download these agent profiles directly from the in-app librar
 | **UI Framework** | Jetpack Compose + Material Design 3 |
 | **Networking** | Retrofit + OkHttp + Moshi |
 | **Database** | Room (SQLite) |
-| **Architecture** | MVVM with Repository Pattern |
-| **Build System** | Gradle (Kotlin DSL) with Version Catalog |
+| **Architecture** | MVVM with Repository Pattern & ActionHandler |
+| **Build System** | Gradle 9.5.1 (Kotlin DSL) with Version Catalog |
 
 ---
 
