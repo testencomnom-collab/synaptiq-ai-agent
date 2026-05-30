@@ -169,7 +169,7 @@ fun AgentLibraryTab(viewModel: AgentViewModel) {
                     )
                 }
 
-                items(agents) { agent ->
+                items(agents, key = { it.id }) { agent ->
                     val progress = downloadingAgents[agent.id]
                     val isDownloading = progress != null
 

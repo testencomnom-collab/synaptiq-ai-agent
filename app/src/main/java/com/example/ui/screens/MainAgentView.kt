@@ -1278,7 +1278,7 @@ fun SystemCalendarTab(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(eventList) { event ->
+                    items(eventList, key = { it.id }) { event ->
                         CalendarEventCard(event)
                     }
                 }
