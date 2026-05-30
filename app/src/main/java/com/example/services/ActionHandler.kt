@@ -12,6 +12,10 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.hardware.camera2.CameraManager
+import android.provider.AlarmClock
+import android.content.Context
+import android.app.SearchManager
 
 object ActionHandler {
 
@@ -76,6 +80,78 @@ object ActionHandler {
         val sysRecipient = json.optString("recipient", "")
         val sysInstruction = json.optString("instruction", "")
         val finalInstruction = if (sysInstruction.isEmpty()) json.optString("systemActionInstruction", "") else sysInstruction
+
+        // Hardware & System Controls
+        when (sysApp.lowercase().trim()) {
+            "flashlight", "taschenlampe" -> {
+                return try {
+                    val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+                    val cameraId = cameraManager.cameraIdList[0]
+                    val turnOn = finalInstruction.contains("on", ignoreCase = true) || finalInstruction.contains("an", ignoreCase = true)
+                    cameraManager.setTorchMode(cameraId, turnOn)
+                    Toast.makeText(context, if (turnOn) "Flashlight ON" else "Flashlight OFF", Toast.LENGTH_SHORT).show()
+                    true
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Could not control flashlight: ${e.message}", Toast.LENGTH_SHORT).show()
+                    false
+                }
+            }
+            "alarm", "wecker" -> {
+                val timeStr = finalInstruction.filter { it.isDigit() || it == ':' }
+                if (timeStr.isNotEmpty()) {
+                    val parts = timeStr.split(":")
+                    val hour = parts[0].toIntOrNull() ?: 0
+                    val minute = if (parts.size > 1) parts[1].toIntOrNull() ?: 0 else 0
+                    val intent = Intent(AlarmClock.ACTION_SET_ALARM).apply {
+                        putExtra(AlarmClock.EXTRA_HOUR, hour)
+                        putExtra(AlarmClock.EXTRA_MINUTES, minute)
+                        putExtra(AlarmClock.EXTRA_MESSAGE, sysRecipient.ifEmpty { "AI Alarm" })
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(intent)
+                    return true
+                }
+            }
+            "timer" -> {
+                val minutes = finalInstruction.filter { it.isDigit() }.toIntOrNull() ?: 5
+                val intent = Intent(AlarmClock.ACTION_SET_TIMER).apply {
+                    putExtra(AlarmClock.EXTRA_LENGTH, minutes * 60)
+                    putExtra(AlarmClock.EXTRA_MESSAGE, sysRecipient.ifEmpty { "AI Timer" })
+                    putExtra(AlarmClock.EXTRA_SKIP_UI, false)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+                return true
+            }
+            "spotify" -> {
+                val intent = Intent(Intent.ACTION_MAIN).apply {
+                    action = "android.media.action.MEDIA_PLAY_FROM_SEARCH"
+                    setPackage("com.spotify.music")
+                    putExtra(SearchManager.QUERY, finalInstruction)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                return try {
+                    context.startActivity(intent)
+                    true
+                } catch (e: Exception) {
+                    // Fallback to opening app
+                    val launchIntent = context.packageManager.getLaunchIntentForPackage("com.spotify.music")
+                    if (launchIntent != null) {
+                        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(launchIntent)
+                        true
+                    } else false
+                }
+            }
+            "search", "google" -> {
+                val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
+                    putExtra(SearchManager.QUERY, finalInstruction)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+                return true
+            }
+        }
 
         if (sysApp.isNotEmpty()) {
             val pm = context.packageManager

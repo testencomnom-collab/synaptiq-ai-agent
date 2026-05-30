@@ -192,6 +192,11 @@ class LLMAgentService(
             - If they ask to reply to or draft an email, compose the email response (recipient, subject, body).
             - If they ask to schedule an event or meeting, analyze their calendar availability to find an open date/time that DOES NOT conflict with existing events.
             - If they ask to send a message via an app (Snapchat, WhatsApp, Instagram, Telegram, Discord, etc.), use "SYSTEM_ACTION". Put the app name in "targetApp", the person they want to send it to in "recipient", and the ACTUAL MESSAGE TEXT they want to send in "instruction". Do NOT put UI navigation steps - just put the message content itself.
+            - If they ask to toggle the flashlight/torch, use "SYSTEM_ACTION" with "targetApp": "flashlight" and "instruction": "on" or "off".
+            - If they ask to set an alarm or wake them up, use "SYSTEM_ACTION" with "targetApp": "alarm" and "instruction": "HH:MM".
+            - If they ask to set a timer, use "SYSTEM_ACTION" with "targetApp": "timer" and "instruction": "duration in minutes" (e.g. "5").
+            - If they ask to play a song/artist/playlist on Spotify, use "SYSTEM_ACTION" with "targetApp": "spotify" and "instruction": "Song/Artist name".
+            - If they ask to search the web or google something, use "SYSTEM_ACTION" with "targetApp": "search" and "instruction": "Search query".
             - If they ask to open any app, use "SYSTEM_ACTION" with the app name in "targetApp" and leave "instruction" and "recipient" empty.
             
             You MUST return your entire output as a strictly valid, parsable JSON object. Do not include any markdown backticks, explanations outside the JSON, or leading/trailing text. The JSON structure MUST be:
@@ -212,9 +217,9 @@ class LLMAgentService(
                   "endTimeIso": "ISO-8601 date string of proposed event (e.g., '2026-05-30T11:00:00')"
                },
                "systemAction": {
-                  "targetApp": "Simple app name like 'Snapchat', 'WhatsApp', 'Instagram', 'Telegram', 'Discord', 'YouTube', 'Chrome', 'Settings', 'Camera', 'TikTok', 'Spotify'",
+                  "targetApp": "App name ('Snapchat', 'WhatsApp', 'Instagram', 'Telegram', 'Discord', 'YouTube', 'Chrome', 'Settings', 'Camera', 'TikTok', 'Spotify', 'flashlight', 'alarm', 'timer', 'search')",
                   "recipient": "The name of the friend/contact, or empty string if not applicable",
-                  "instruction": "The actual message text to send, or empty string if just opening the app"
+                  "instruction": "The actual message text to send, or the command (e.g. 'on', '5', '10:00'), or empty string if just opening the app"
                }
             }
             
