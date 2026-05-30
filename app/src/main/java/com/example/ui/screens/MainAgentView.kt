@@ -1795,13 +1795,15 @@ fun AgentSettingsTab(
                     HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
 
                     // Audio permission row
+                    val hasAudioPerms = remember { mutableStateOf(permissionsManager.isGranted(AgentPermission.RECORD_AUDIO)) }
                     PermissionItemRow(
                         title = "Mikrofon-Zugriff",
                         description = "Erlaubt Sprachsteuerung und Diktierfunktion.",
-                        hasPermission = permissionsManager.isGranted(AgentPermission.RECORD_AUDIO),
+                        hasPermission = hasAudioPerms.value,
                         onRequest = {
                             coroutineScope.launch {
-                                permissionsManager.requestPermissions(AgentPermission.RECORD_AUDIO)
+                                val results = permissionsManager.requestPermissions(AgentPermission.RECORD_AUDIO)
+                                hasAudioPerms.value = results.values.all { it }
                             }
                         }
                     )
@@ -1809,13 +1811,15 @@ fun AgentSettingsTab(
                     HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
 
                     // Camera permission row
+                    val hasCameraPerms = remember { mutableStateOf(permissionsManager.isGranted(AgentPermission.CAMERA)) }
                     PermissionItemRow(
                         title = "Kamera-Zugriff",
                         description = "Für Bildanalyse und Computer Vision Features.",
-                        hasPermission = permissionsManager.isGranted(AgentPermission.CAMERA),
+                        hasPermission = hasCameraPerms.value,
                         onRequest = {
                             coroutineScope.launch {
-                                permissionsManager.requestPermissions(AgentPermission.CAMERA)
+                                val results = permissionsManager.requestPermissions(AgentPermission.CAMERA)
+                                hasCameraPerms.value = results.values.all { it }
                             }
                         }
                     )
@@ -1823,13 +1827,15 @@ fun AgentSettingsTab(
                     HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
 
                     // Phone permission row
+                    val hasPhonePerms = remember { mutableStateOf(permissionsManager.isGranted(AgentPermission.CALL_PHONE) && permissionsManager.isGranted(AgentPermission.READ_CALL_LOG)) }
                     PermissionItemRow(
                         title = "Telefon-Anrufe",
                         description = "Erlaubt das Tätigen von Anrufen und Lesen der Historie.",
-                        hasPermission = permissionsManager.isGranted(AgentPermission.CALL_PHONE),
+                        hasPermission = hasPhonePerms.value,
                         onRequest = {
                             coroutineScope.launch {
-                                permissionsManager.requestPermissions(AgentPermission.CALL_PHONE, AgentPermission.READ_CALL_LOG)
+                                val results = permissionsManager.requestPermissions(AgentPermission.CALL_PHONE, AgentPermission.READ_CALL_LOG)
+                                hasPhonePerms.value = results.values.all { it }
                             }
                         }
                     )
