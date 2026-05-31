@@ -23,11 +23,29 @@
 # Moshi
 -keep class com.squareup.moshi.** { *; }
 -keep interface com.squareup.moshi.** { *; }
+-keepclassmembers class * {
+    @com.squareup.moshi.FromJson <methods>;
+    @com.squareup.moshi.ToJson <methods>;
+}
+-keepclassmembers @com.squareup.moshi.JsonClass class * { *; }
+
+# Keep Kotlin metadata for Moshi reflection
+-keepattributes *Annotation*, Signature, InnerClasses, EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
 
 # Models
 -keep class com.example.data.model.** { *; }
 -keep class com.example.data.api.** { *; }
 -keep class com.example.domain.model.** { *; }
+-keep class com.example.services.AgentProposal { *; }
+
+# Retrofit
+-keep,allowobfuscation interface * {
+    @retrofit2.http.* <methods>;
+}
+-dontwarn kotlin.Unit
+-dontwarn retrofit2.KotlinExtensions
+-dontwarn retrofit2.KotlinExtensions$*
 
 # Coroutines
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}

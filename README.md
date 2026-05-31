@@ -12,7 +12,7 @@
 
 <br>
 
-[![Download APK](https://img.shields.io/badge/Download-Latest_APK_V12-FF4500?style=for-the-badge&logo=android&logoColor=white)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/on-device-agent-V12-bugfixes.apk)
+[![Download APK](https://img.shields.io/badge/Download-Latest_APK_V13-FF4500?style=for-the-badge&logo=android&logoColor=white)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/V13.apk)
 
 </div>
 
@@ -35,8 +35,8 @@ Welcome to the future of mobile assistance! The **On-Device AI Agent** acts as a
    Download and run the actual **1.35 GB Gemma 2B model** via MediaPipe. The processing happens entirely offline without requiring an internet connection—guaranteeing 100% privacy.
 
 4. 🧠 **Langzeit-Gedächtnis (Contextual Memory)**  
-   *Aktuell ist der Chat wahrscheinlich relativ kurzlebig.*  
-   **Wie es funktioniert:** Die KI speichert bestimmte Fakten über dich dauerhaft ab (z.B. Namen deiner Freunde, deinen Arbeitsort, deine Lieblingsmusik). Wenn du sagst "Spiele meine Lieblingsmusik", weiß sie ohne Nachfragen, dass sie Spotify öffnen und "Daft Punk" abspielen muss, weil sie sich das aus einem Chat vor 3 Wochen gemerkt hat.
+   **Das Feature ist vollständig implementiert!**  
+   **Wie es funktioniert:** Die KI speichert bestimmte Fakten über dich dauerhaft ab (z.B. Namen deiner Freunde, deinen Arbeitsort, deine Lieblingsmusik) in einer sicheren Room-Datenbank. Über ein neues Gehirn-Icon (Brain UI) in der oberen Leiste der App kannst du alle von der KI gelernten Erinnerungen live einsehen, einzeln per Papierkorb löschen oder das gesamte Gedächtnis zurücksetzen.
 
 5. 🎨 **Beautiful Modern UI**  
    A sleek, dark-mode focused UI with a brand new custom app icon, dynamic animations, and premium glassmorphic elements. Multilanguage support included!
