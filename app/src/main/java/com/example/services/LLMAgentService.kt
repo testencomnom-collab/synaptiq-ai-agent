@@ -56,22 +56,90 @@ class LLMAgentService(
 
         // 1. HYBRID-ROUTING-SYSTEM: Weichenstellung
         val useLocal = (agentId != "system" && agentId.isNotEmpty())
-        var apiErrorFallback = false
-        var apiFallbackReason = ""
 
-        if (!useLocal) {
-            // PFAD A: Cloud-Modus (Open AI / Anthropic / Gemini Rest APIs)
-            if (apiKey.trim().isEmpty()) {
-                apiErrorFallback = true
-                apiFallbackReason = "Kein API Key konfiguriert"
-            } else {
+        // PFAD B (Direkt): Lokaler Agent explizit ausgewählt
+        if (useLocal) {
+            return@withContext executeLocalFallback(agentId, userQuery, isApiFallback = false, fallbackReason = "")
+        }
 
+        // PFAD A: Cloud-Modus (OpenAI / Anthropic / Gemini)
+        if (apiKey.trim().isEmpty()) {
+            // Kein API-Key → Hybrid-Fallback auf lokales Modell
+            Log.d(TAG, "No API key configured, falling back to local model")
+            return@withContext executeLocalFallback(agentId, userQuery, isApiFallback = true, fallbackReason = "Kein API Key konfiguriert")
+        }
+
+        // API-Key vorhanden → Cloud-API versuchen
+        try {
+            val result = executeCloudQuery(agentId, userQuery, notificationsContext, activeProvider, apiKey, model)
+            return@withContext result
+        } catch (e: Exception) {
+            // Cloud-API fehlgeschlagen → Hybrid-Fallback auf lokales Modell
+            Log.e(TAG, "Cloud API failed, initiating Hybrid Fallback to local model", e)
+            val reason = e.message ?: "Network error"
+            return@withContext executeLocalFallback(agentId, userQuery, isApiFallback = true, fallbackReason = reason)
+        }
+    }
+
+    /**
+     * Führt die Anfrage über das lokale On-Device Modell (Gemma 2B via MediaPipe) aus.
+     * Wird sowohl für explizit lokale Agenten als auch als Fallback bei API-Fehlern genutzt.
+     */
+    private suspend fun executeLocalFallback(agentId: String, userQuery: String, isApiFallback: Boolean, fallbackReason: String): AgentProposal {
+        val logLabel = if (isApiFallback) "Hybrid Fallback" else agentId
+        Log.d(TAG, "Routing to Local On-Device Mode: $logLabel")
+
+        if (!isLocalEngineReady) {
+            isLocalEngineReady = localEngine.initialize()
+        }
+        if (!isLocalEngineReady) {
+            return AgentProposal(
+                thought = "Lokale Modellgewichte fehlen oder Engine Error.",
+                responseText = "Fehler: Das MediaPipe Modell ist nicht aktiv. Bitte lade das Modell in der Bibliothek herunter.",
+                hasAction = false,
+                actionType = "NONE"
+            )
+        }
+
+        val activeAgentId = if (!isApiFallback) agentId else "system"
+        val agentConfig = if (activeAgentId != "system") repository.getAgentConfig(activeAgentId) else null
+        val agentLang = preferencesManager.agentLanguage
+        val sysPrompt = (agentConfig?.systemPrompt ?: "Du bist ein intelligenter lokaler KI Assistent. Antworte immer hilfsbereit und freundlich.") + " WICHTIG: Antworte in dieser Sprache: $agentLang"
+
+        val fullPrompt = "<start_of_turn>user\n${sysPrompt}\n\nUser: $userQuery\n<end_of_turn>\n<start_of_turn>model\n"
+
+        val response = localEngine.generateResponse(fullPrompt)
+        val thoughtMsg = if (isApiFallback) {
+            "Cloud-API fehlgeschlagen ($fallbackReason). Automatischer Hybrid-Fallback auf 100% Offline-Ausführung (Gemma 2B)."
+        } else {
+            "PFAD B: 100% Offline-Ausführung (Gemma 2B). Keine Cloud-APIs oder Netzwerke genutzt."
+        }
+        return AgentProposal(
+            thought = thoughtMsg,
+            responseText = response.trim(),
+            hasAction = false,
+            actionType = "NONE"
+        )
+    }
+
+    /**
+     * Führt die Anfrage über die Cloud-API (OpenAI, Anthropic oder Gemini) aus.
+     * Wirft eine Exception bei Fehlern, damit der Aufrufer den Hybrid-Fallback auslösen kann.
+     */
+    private suspend fun executeCloudQuery(
+        agentId: String,
+        userQuery: String,
+        notificationsContext: List<NotificationItem>,
+        activeProvider: String,
+        apiKey: String,
+        model: String
+    ): AgentProposal {
         // 1. Gather Calendar data for next 7 days
         val now = Calendar.getInstance()
         val startMillis = now.timeInMillis
         val endCal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 7) }
         val endMillis = endCal.timeInMillis
-        
+
         val localEvents = CalendarManager.fetchEvents(context, startMillis, endMillis)
         val calendarDetails = StringBuilder()
         if (localEvents.isEmpty()) {
@@ -194,200 +262,147 @@ class LLMAgentService(
             Ensure calendar times are calculated correctly based on the current date: $currentDateTimeStr. 
         """.trimIndent()
 
-        try {
-            val responseText: String = when (activeProvider) {
-                "OPENAI" -> {
-                    val messages = listOf(
-                        OpenAiMessage("system", systemPrompt),
-                        OpenAiMessage("user", userQuery)
-                    )
-                    val response = LLMServiceClient.openAiApi.getOpenAiCompletion(
-                        authHeader = "Bearer $apiKey",
-                        request = OpenAiRequest(model = model, messages = messages)
-                    )
-                    if (response.isSuccessful) {
-                        response.body()?.choices?.firstOrNull()?.message?.content ?: ""
-                    } else {
-                        val errorBody = response.errorBody()?.string() ?: ""
-                        if (com.example.BuildConfig.DEBUG) {
-                            Log.e(TAG, "OpenAI Error: $errorBody")
-                        }
-                        throw Exception("OpenAI API failed: ${response.code()} ${response.message()}")
-                    }
-                }
-                "ANTHROPIC" -> {
-                    val messages = listOf(
-                        AnthropicMessage("user", userQuery)
-                    )
-                    val response = LLMServiceClient.anthropicApi.getAnthropicCompletion(
-                        apiKey = apiKey,
-                        request = AnthropicRequest(model = model, messages = messages, system = systemPrompt)
-                    )
-                    if (response.isSuccessful) {
-                        response.body()?.content?.firstOrNull()?.text ?: ""
-                    } else {
-                        val errorBody = response.errorBody()?.string() ?: ""
-                        if (com.example.BuildConfig.DEBUG) {
-                            Log.e(TAG, "Anthropic Error: $errorBody")
-                        }
-                        throw Exception("Anthropic API failed: ${response.code()} ${response.message()}")
-                    }
-                }
-                "GEMINI" -> {
-                    // Send system prompt followed by instruction and user input safely
-                    val fullPrompt = "$systemPrompt\n\nUser request: $userQuery"
-                    val request = GeminiRequest(
-                        contents = listOf(GeminiContent(parts = listOf(GeminiPart(text = fullPrompt))))
-                    )
-                    val response = LLMServiceClient.geminiApi.getGeminiCompletion(
-                        model = model,
-                        apiKey = apiKey,
-                        request = request
-                    )
-                    if (response.isSuccessful) {
-                        response.body()?.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: ""
-                    } else {
-                        val errorBody = response.errorBody()?.string() ?: ""
-                        if (com.example.BuildConfig.DEBUG) {
-                            Log.e(TAG, "Gemini Error: $errorBody")
-                        }
-                        throw Exception("Gemini API failed: ${response.code()} ${response.message()}")
-                    }
-                }
-                else -> throw Exception("Unknown LLM Provider selected.")
-            }
-
-            // Parse response JSON
-            val cleanJson = responseText.trim()
-                .removePrefix("```json")
-                .removeSuffix("```")
-                .trim()
-
-            if (com.example.BuildConfig.DEBUG) {
-                Log.d(TAG, "Full AI Response text: $cleanJson")
-            }
-
-            val json = JSONObject(cleanJson)
-            val thought = json.optString("thought", "Analyzed user instructions.")
-            val responseMsg = json.optString("responseText", "Review drafted proposals below.")
-            val hasAction = json.optBoolean("hasAction", false)
-            val actionType = json.optString("actionType", "NONE")
-
-            var recipient: String? = null
-            var subject: String? = null
-            var body: String? = null
-
-            val emailObj = json.optJSONObject("emailAction")
-            if (emailObj != null) {
-                recipient = emailObj.optString("recipient")
-                subject = emailObj.optString("subject")
-                body = emailObj.optString("body")
-            }
-
-            var title: String? = null
-            var desc: String? = null
-            var startMillisParsed: Long? = null
-            var endMillisParsed: Long? = null
-
-            val calObj = json.optJSONObject("calendarAction")
-            if (calObj != null) {
-                title = calObj.optString("title")
-                desc = calObj.optString("description")
-                val startIso = calObj.optString("startTimeIso")
-                val endIso = calObj.optString("endTimeIso")
-
-                val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-                try {
-                    startMillisParsed = isoFormat.parse(startIso)?.time
-                    endMillisParsed = isoFormat.parse(endIso)?.time
-                } catch (pe: Exception) {
-                    Log.e(TAG, "Failed to parse ISO-8601 dates: start=$startIso, end=$endIso. Creating defaults.", pe)
-                    // fallback to 24h from now
-                    val tomorrow = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }
-                    startMillisParsed = tomorrow.timeInMillis
-                    tomorrow.add(Calendar.HOUR_OF_DAY, 1)
-                    endMillisParsed = tomorrow.timeInMillis
-                }
-            }
-
-            var sysApp: String? = null
-            var sysRecipient: String? = null
-            var sysInstruction: String? = null
-
-            val sysObj = json.optJSONObject("systemAction")
-            if (sysObj != null) {
-                sysApp = sysObj.optString("targetApp")
-                sysRecipient = sysObj.optString("recipient")
-                sysInstruction = sysObj.optString("instruction")
-            }
-
-            return@withContext AgentProposal(
-                thought = thought,
-                responseText = responseMsg,
-                hasAction = hasAction,
-                actionType = actionType,
-                emailRecipient = recipient,
-                emailSubject = subject,
-                emailBody = body,
-                calendarTitle = title,
-                calendarDesc = desc,
-                calendarStartMillis = startMillisParsed,
-                calendarEndMillis = endMillisParsed,
-                systemActionApp = sysApp,
-                systemActionRecipient = sysRecipient,
-                systemActionInstruction = sysInstruction
-            )
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Error executing agent action query, initiating Hybrid Fallback", e)
-            apiErrorFallback = true
-            apiFallbackReason = e.message ?: "Network error"
-        }
-            } // Close the `else` block for apiKey.trim().isNotEmpty()
-        } // Close the `if (!useLocal)` block
-
-        // PFAD B: Echter Lokaler Modus (On-Device MediaPipe)
-        if (useLocal || apiErrorFallback) {
-            Log.d(TAG, "Routing to Local On-Device Mode for Agent: ${if (apiErrorFallback) "Fallback System" else agentId}")
-            if (!isLocalEngineReady) {
-                isLocalEngineReady = localEngine.initialize() 
-            }
-            if (!isLocalEngineReady) {
-                return@withContext AgentProposal(
-                    thought = "Lokale Modellgewichte fehlen oder Engine Error.",
-                    responseText = "Fehler: Das MediaPipe Modell ist nicht aktiv. Bitte lade das Modell in der Bibliothek herunter.",
-                    hasAction = false,
-                    actionType = "NONE"
+        val responseText: String = when (activeProvider) {
+            "OPENAI" -> {
+                val messages = listOf(
+                    OpenAiMessage("system", systemPrompt),
+                    OpenAiMessage("user", userQuery)
                 )
+                val response = LLMServiceClient.openAiApi.getOpenAiCompletion(
+                    authHeader = "Bearer $apiKey",
+                    request = OpenAiRequest(model = model, messages = messages)
+                )
+                if (response.isSuccessful) {
+                    response.body()?.choices?.firstOrNull()?.message?.content ?: ""
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    if (com.example.BuildConfig.DEBUG) {
+                        Log.e(TAG, "OpenAI Error: $errorBody")
+                    }
+                    throw Exception("OpenAI API failed: ${response.code()} ${response.message()}")
+                }
             }
-            
-            val activeAgentId = if (useLocal) agentId else "system"
-            val agentConfig = if (activeAgentId != "system") repository.getAgentConfig(activeAgentId) else null
-            val agentLang = preferencesManager.agentLanguage
-            val sysPrompt = (agentConfig?.systemPrompt ?: "Du bist ein intelligenter lokaler KI Assistent. Antworte immer hilfsbereit und freundlich.") + " WICHTIG: Antworte in dieser Sprache: $agentLang"
-            
-            val fullPrompt = "<start_of_turn>user\n${sysPrompt}\n\nUser: $userQuery\n<end_of_turn>\n<start_of_turn>model\n"
-            
-            val response = localEngine.generateResponse(fullPrompt)
-            val thoughtMsg = if (apiErrorFallback) {
-                "Cloud-API fehlgeschlagen ($apiFallbackReason). Automatischer Hybrid-Fallback auf 100% Offline-Ausführung (Gemma 2B)."
-            } else {
-                "PFAD B: 100% Offline-Ausführung (Gemma 2B). Keine Cloud-APIs oder Netzwerke genutzt."
+            "ANTHROPIC" -> {
+                val messages = listOf(
+                    AnthropicMessage("user", userQuery)
+                )
+                val response = LLMServiceClient.anthropicApi.getAnthropicCompletion(
+                    apiKey = apiKey,
+                    request = AnthropicRequest(model = model, messages = messages, system = systemPrompt)
+                )
+                if (response.isSuccessful) {
+                    response.body()?.content?.firstOrNull()?.text ?: ""
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    if (com.example.BuildConfig.DEBUG) {
+                        Log.e(TAG, "Anthropic Error: $errorBody")
+                    }
+                    throw Exception("Anthropic API failed: ${response.code()} ${response.message()}")
+                }
             }
-            return@withContext AgentProposal(
-                thought = thoughtMsg,
-                responseText = response.trim(),
-                hasAction = false,
-                actionType = "NONE"
-            )
+            "GEMINI" -> {
+                // Send system prompt followed by instruction and user input safely
+                val fullPrompt = "$systemPrompt\n\nUser request: $userQuery"
+                val request = GeminiRequest(
+                    contents = listOf(GeminiContent(parts = listOf(GeminiPart(text = fullPrompt))))
+                )
+                val response = LLMServiceClient.geminiApi.getGeminiCompletion(
+                    model = model,
+                    apiKey = apiKey,
+                    request = request
+                )
+                if (response.isSuccessful) {
+                    response.body()?.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: ""
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    if (com.example.BuildConfig.DEBUG) {
+                        Log.e(TAG, "Gemini Error: $errorBody")
+                    }
+                    throw Exception("Gemini API failed: ${response.code()} ${response.message()}")
+                }
+            }
+            else -> throw Exception("Unknown LLM Provider selected.")
         }
-        
-        // Fallback for edge cases
-        return@withContext AgentProposal(
-            thought = "System Error",
-            responseText = "Fehler im Hybrid-Routing-System.",
-            hasAction = false,
-            actionType = "NONE"
+
+        // Parse response JSON
+        val cleanJson = responseText.trim()
+            .removePrefix("```json")
+            .removeSuffix("```")
+            .trim()
+
+        if (com.example.BuildConfig.DEBUG) {
+            Log.d(TAG, "Full AI Response text: $cleanJson")
+        }
+
+        val json = JSONObject(cleanJson)
+        val thought = json.optString("thought", "Analyzed user instructions.")
+        val responseMsg = json.optString("responseText", "Review drafted proposals below.")
+        val hasAction = json.optBoolean("hasAction", false)
+        val actionType = json.optString("actionType", "NONE")
+
+        var recipient: String? = null
+        var subject: String? = null
+        var body: String? = null
+
+        val emailObj = json.optJSONObject("emailAction")
+        if (emailObj != null) {
+            recipient = emailObj.optString("recipient")
+            subject = emailObj.optString("subject")
+            body = emailObj.optString("body")
+        }
+
+        var title: String? = null
+        var desc: String? = null
+        var startMillisParsed: Long? = null
+        var endMillisParsed: Long? = null
+
+        val calObj = json.optJSONObject("calendarAction")
+        if (calObj != null) {
+            title = calObj.optString("title")
+            desc = calObj.optString("description")
+            val startIso = calObj.optString("startTimeIso")
+            val endIso = calObj.optString("endTimeIso")
+
+            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            try {
+                startMillisParsed = isoFormat.parse(startIso)?.time
+                endMillisParsed = isoFormat.parse(endIso)?.time
+            } catch (pe: Exception) {
+                Log.e(TAG, "Failed to parse ISO-8601 dates: start=$startIso, end=$endIso. Creating defaults.", pe)
+                // fallback to 24h from now
+                val tomorrow = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }
+                startMillisParsed = tomorrow.timeInMillis
+                tomorrow.add(Calendar.HOUR_OF_DAY, 1)
+                endMillisParsed = tomorrow.timeInMillis
+            }
+        }
+
+        var sysApp: String? = null
+        var sysRecipient: String? = null
+        var sysInstruction: String? = null
+
+        val sysObj = json.optJSONObject("systemAction")
+        if (sysObj != null) {
+            sysApp = sysObj.optString("targetApp")
+            sysRecipient = sysObj.optString("recipient")
+            sysInstruction = sysObj.optString("instruction")
+        }
+
+        return AgentProposal(
+            thought = thought,
+            responseText = responseMsg,
+            hasAction = hasAction,
+            actionType = actionType,
+            emailRecipient = recipient,
+            emailSubject = subject,
+            emailBody = body,
+            calendarTitle = title,
+            calendarDesc = desc,
+            calendarStartMillis = startMillisParsed,
+            calendarEndMillis = endMillisParsed,
+            systemActionApp = sysApp,
+            systemActionRecipient = sysRecipient,
+            systemActionInstruction = sysInstruction
         )
     }
 
