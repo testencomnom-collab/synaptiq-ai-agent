@@ -16,8 +16,16 @@ import android.hardware.camera2.CameraManager
 import android.provider.AlarmClock
 import android.content.Context
 import android.app.SearchManager
+import android.os.Handler
+import android.os.Looper
 
 object ActionHandler {
+
+    private fun showToastOnMainThread(context: Context, message: String, length: Int = Toast.LENGTH_SHORT) {
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(context, message, length).show()
+        }
+    }
 
     private fun executeDirectly(context: Context, targetIntent: Intent, message: String, targetApp: String? = null, targetRecipient: String? = null) {
         try {
@@ -25,7 +33,7 @@ object ActionHandler {
             context.startActivity(targetIntent)
         } catch (e: Exception) {
             Log.e("ActionHandler", "Failed to execute autonomous action", e)
-            Toast.makeText(context, "Execution failed: \${e.message}", Toast.LENGTH_SHORT).show()
+            showToastOnMainThread(context, "Execution failed: ${e.message}", Toast.LENGTH_SHORT)
         }
     }
 
@@ -47,18 +55,18 @@ object ActionHandler {
             }
             if (uri != null) {
                 val sdf = SimpleDateFormat("h:mm a (MMM d)", Locale.getDefault())
-                Toast.makeText(
+                showToastOnMainThread(
                     context,
-                    "Scheduled event: \"\$calTitle\" at \${sdf.format(Date(start))}",
+                    "Scheduled event: \"$calTitle\" at ${sdf.format(Date(start))}",
                     Toast.LENGTH_LONG
-                ).show()
+                )
                 return true
             } else {
-                Toast.makeText(
+                showToastOnMainThread(
                     context,
                     "Failed to write to calendar. Check runtime permissions inside System Settings.",
                     Toast.LENGTH_LONG
-                ).show()
+                )
                 return false
             }
         }
@@ -78,8 +86,8 @@ object ActionHandler {
                 putExtra(Intent.EXTRA_TEXT, body)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
-            Toast.makeText(context, "Opening email composer draft...", Toast.LENGTH_SHORT).show()
-            executeDirectly(context, emailIntent, "E-Mail an \$rec vorbereiten?")
+            showToastOnMainThread(context, "Opening email composer draft...", Toast.LENGTH_SHORT)
+            executeDirectly(context, emailIntent, "E-Mail an $rec vorbereiten?")
             return true
         }
         return false
@@ -99,10 +107,10 @@ object ActionHandler {
                     val cameraId = cameraManager.cameraIdList[0]
                     val turnOn = finalInstruction.contains("on", ignoreCase = true) || finalInstruction.contains("an", ignoreCase = true)
                     cameraManager.setTorchMode(cameraId, turnOn)
-                    Toast.makeText(context, if (turnOn) "Flashlight ON" else "Flashlight OFF", Toast.LENGTH_SHORT).show()
+                    showToastOnMainThread(context, if (turnOn) "Flashlight ON" else "Flashlight OFF", Toast.LENGTH_SHORT)
                     true
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Could not control flashlight: \${e.message}", Toast.LENGTH_SHORT).show()
+                    showToastOnMainThread(context, "Could not control flashlight: ${e.message}", Toast.LENGTH_SHORT)
                     false
                 }
             }
@@ -229,12 +237,12 @@ object ActionHandler {
                             executeDirectly(context, launchIntent, "\$sysApp öffnen?")
                             return true
                         } else {
-                            Toast.makeText(context, "\$sysApp is not installed on this device.", Toast.LENGTH_LONG).show()
+                            showToastOnMainThread(context, "$sysApp is not installed on this device.", Toast.LENGTH_LONG)
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e("ActionHandler", "Failed to launch \$sysApp", e)
-                    Toast.makeText(context, "Could not open \$sysApp: \${e.message}", Toast.LENGTH_LONG).show()
+                    Log.e("ActionHandler", "Failed to launch $sysApp", e)
+                    showToastOnMainThread(context, "Could not open $sysApp: ${e.message}", Toast.LENGTH_LONG)
                 }
             } else {
                 val installed = pm.getInstalledApplications(0)
@@ -249,7 +257,7 @@ object ActionHandler {
                         return true
                     }
                 } else {
-                    Toast.makeText(context, "App '\$sysApp' not found on device.", Toast.LENGTH_LONG).show()
+                    showToastOnMainThread(context, "App '$sysApp' not found on device.", Toast.LENGTH_LONG)
                 }
             }
         }

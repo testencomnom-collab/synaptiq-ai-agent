@@ -12,10 +12,9 @@ object AgentEngineManager {
     val engineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     fun getService(application: Application, prefs: PreferencesManager, repo: AgentRepository): LLMAgentService {
-        if (agentService == null) {
-            agentService = LLMAgentService(application, prefs, repo)
+        return agentService ?: LLMAgentService(application, prefs, repo).also {
+            agentService = it
         }
-        return agentService!!
     }
 
     fun shutdown() {
