@@ -22,7 +22,11 @@ import com.example.ui.AgentViewModel
 import com.example.ui.screens.MainAgentView
 import com.example.ui.theme.MyApplicationTheme
 import android.util.Log
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 class MainActivity : ComponentActivity() {
     private lateinit var permissionsManager: PermissionsManager
     private val crashError = mutableStateOf<String?>(null)
@@ -55,8 +59,13 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     } else {
+                        val windowSizeClass = calculateWindowSizeClass(this@MainActivity)
                         val agentViewModel: AgentViewModel = viewModel()
-                        MainAgentView(viewModel = agentViewModel, permissionsManager = permissionsManager)
+                        MainAgentView(
+                            viewModel = agentViewModel, 
+                            permissionsManager = permissionsManager,
+                            windowSizeClass = windowSizeClass
+                        )
                     }
                 }
             }

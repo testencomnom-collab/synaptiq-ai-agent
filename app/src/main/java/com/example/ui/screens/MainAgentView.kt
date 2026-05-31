@@ -49,6 +49,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import com.example.data.model.ChatMessage
 import com.example.data.model.NotificationItem
 import com.example.data.model.LocalAgentRepository
@@ -89,6 +91,7 @@ fun AnimatedLiquidBackground(modifier: Modifier = Modifier) {
 fun MainAgentView(
     viewModel: AgentViewModel,
     permissionsManager: PermissionsManager,
+    windowSizeClass: WindowSizeClass,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -120,99 +123,148 @@ fun MainAgentView(
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedLiquidBackground()
         
-        Scaffold(
-            containerColor = Color.Transparent,
-            bottomBar = {
-                NavigationBar(
+        val useNavigationRail = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
+        
+        Row(modifier = Modifier.fillMaxSize()) {
+            if (useNavigationRail) {
+                NavigationRail(
                     containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
-                    modifier = Modifier.testTag("bottom_nav_bar")
+                    modifier = Modifier.testTag("side_nav_rail").width(80.dp)
                 ) {
-                NavigationBarItem(
-                    selected = currentTab == "chat",
-                    onClick = { currentTab = "chat" },
-                    icon = { Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Chat") },
-                    label = { Text("Agent") }
-                )
-                NavigationBarItem(
-                    selected = currentTab == "notifications",
-                    onClick = { currentTab = "notifications" },
-                    icon = { Icon(Icons.Default.Notifications, contentDescription = "Notifications") },
-                    label = { Text("Benachrichtigungen") }
-                )
-                NavigationBarItem(
-                    selected = currentTab == "calendar",
-                    onClick = { currentTab = "calendar" },
-                    icon = { Icon(Icons.Default.CalendarMonth, contentDescription = "Calendar") },
-                    label = { Text("Schedule") }
-                )
-                NavigationBarItem(
-                    selected = currentTab == "library",
-                    onClick = { currentTab = "library" },
-                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Library") },
-                    label = { Text("Library") }
-                )
-                NavigationBarItem(
-                    selected = currentTab == "settings",
-                    onClick = { currentTab = "settings" },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") }
-                )
+                    Spacer(modifier = Modifier.height(32.dp))
+                    NavigationRailItem(
+                        selected = currentTab == "chat",
+                        onClick = { currentTab = "chat" },
+                        icon = { Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Chat") },
+                        label = { Text("Agent") }
+                    )
+                    NavigationRailItem(
+                        selected = currentTab == "notifications",
+                        onClick = { currentTab = "notifications" },
+                        icon = { Icon(Icons.Default.Notifications, contentDescription = "Notifications") },
+                        label = { Text("Benachrichtigungen") }
+                    )
+                    NavigationRailItem(
+                        selected = currentTab == "calendar",
+                        onClick = { currentTab = "calendar" },
+                        icon = { Icon(Icons.Default.CalendarMonth, contentDescription = "Calendar") },
+                        label = { Text("Schedule") }
+                    )
+                    NavigationRailItem(
+                        selected = currentTab == "library",
+                        onClick = { currentTab = "library" },
+                        icon = { Icon(Icons.Default.Dashboard, contentDescription = "Library") },
+                        label = { Text("Library") }
+                    )
+                    NavigationRailItem(
+                        selected = currentTab == "settings",
+                        onClick = { currentTab = "settings" },
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                        label = { Text("Settings") }
+                    )
+                }
             }
-        },
-        contentWindowInsets = WindowInsets.safeDrawing
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            when (currentTab) {
-                "chat" -> AgentChatTab(viewModel, hasCalendarPerms, onRequestPermissions = { requestCalendarPermissions() })
-                "notifications" -> NotificationManagerTab(viewModel, onNavigateToChat = { currentTab = "chat" })
-                "calendar" -> SystemCalendarTab(viewModel, hasCalendarPerms, onRequestPermissions = { requestCalendarPermissions() })
-                "library" -> AgentLibraryTab(viewModel)
-                "settings" -> AgentSettingsTab(
-                    viewModel = viewModel,
-                    hasCalendarPerms = hasCalendarPerms,
-                    hasContactsPerms = hasContactsPerms,
-                    hasLocationPerms = hasLocationPerms,
-                    hasSmsPerms = hasSmsPerms,
-                    hasAccountsPerms = hasAccountsPerms,
-                    permissionsManager = permissionsManager,
-                    coroutineScope = coroutineScope,
-                    onRequestCalendarPerms = requestCalendarPermissions,
-                    onRequestContactsPerms = {
-                        coroutineScope.launch {
-                            val results = permissionsManager.requestPermissions(AgentPermission.READ_CONTACTS)
-                            hasContactsPerms = results.values.all { it }
+            
+            Scaffold(
+                modifier = Modifier.weight(1f),
+                containerColor = Color.Transparent,
+                bottomBar = {
+                    if (!useNavigationRail) {
+                        NavigationBar(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
+                            modifier = Modifier.testTag("bottom_nav_bar")
+                        ) {
+                            NavigationBarItem(
+                                selected = currentTab == "chat",
+                                onClick = { currentTab = "chat" },
+                                icon = { Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Chat") },
+                                label = { Text("Agent") }
+                            )
+                            NavigationBarItem(
+                                selected = currentTab == "notifications",
+                                onClick = { currentTab = "notifications" },
+                                icon = { Icon(Icons.Default.Notifications, contentDescription = "Notifications") },
+                                label = { Text("Benachrichtigungen") }
+                            )
+                            NavigationBarItem(
+                                selected = currentTab == "calendar",
+                                onClick = { currentTab = "calendar" },
+                                icon = { Icon(Icons.Default.CalendarMonth, contentDescription = "Calendar") },
+                                label = { Text("Schedule") }
+                            )
+                            NavigationBarItem(
+                                selected = currentTab == "library",
+                                onClick = { currentTab = "library" },
+                                icon = { Icon(Icons.Default.Dashboard, contentDescription = "Library") },
+                                label = { Text("Library") }
+                            )
+                            NavigationBarItem(
+                                selected = currentTab == "settings",
+                                onClick = { currentTab = "settings" },
+                                icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                                label = { Text("Settings") }
+                            )
                         }
-                        Unit
-                    },
-                    onRequestLocationPerms = {
-                        coroutineScope.launch {
-                            val results = permissionsManager.requestPermissions(AgentPermission.ACCESS_FINE_LOCATION)
-                            hasLocationPerms = results.values.firstOrNull() ?: false
-                        }
-                        Unit
-                    },
-                    onRequestSmsPerms = {
-                        coroutineScope.launch {
-                            val results = permissionsManager.requestPermissions(AgentPermission.SEND_SMS)
-                            hasSmsPerms = results.values.firstOrNull() ?: false
-                        }
-                        Unit
-                    },
-                    onRequestAccountsPerms = {
-                        coroutineScope.launch {
-                            val results = permissionsManager.requestPermissions(AgentPermission.GET_ACCOUNTS)
-                            hasAccountsPerms = results.values.firstOrNull() ?: false
-                        }
-                        Unit
                     }
-                )
+                },
+                contentWindowInsets = WindowInsets.safeDrawing
+            ) { paddingValues ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Box(modifier = Modifier.widthIn(max = 800.dp).fillMaxSize()) {
+                        when (currentTab) {
+                            "chat" -> AgentChatTab(viewModel, hasCalendarPerms, onRequestPermissions = { requestCalendarPermissions() })
+                            "notifications" -> NotificationManagerTab(viewModel, onNavigateToChat = { currentTab = "chat" })
+                            "calendar" -> SystemCalendarTab(viewModel, hasCalendarPerms, onRequestPermissions = { requestCalendarPermissions() })
+                            "library" -> AgentLibraryTab(viewModel)
+                            "settings" -> AgentSettingsTab(
+                                viewModel = viewModel,
+                                hasCalendarPerms = hasCalendarPerms,
+                                hasContactsPerms = hasContactsPerms,
+                                hasLocationPerms = hasLocationPerms,
+                                hasSmsPerms = hasSmsPerms,
+                                hasAccountsPerms = hasAccountsPerms,
+                                permissionsManager = permissionsManager,
+                                coroutineScope = coroutineScope,
+                                onRequestCalendarPerms = requestCalendarPermissions,
+                                onRequestContactsPerms = {
+                                    coroutineScope.launch {
+                                        val results = permissionsManager.requestPermissions(AgentPermission.READ_CONTACTS)
+                                        hasContactsPerms = results.values.all { it }
+                                    }
+                                    Unit
+                                },
+                                onRequestLocationPerms = {
+                                    coroutineScope.launch {
+                                        val results = permissionsManager.requestPermissions(AgentPermission.ACCESS_FINE_LOCATION)
+                                        hasLocationPerms = results.values.firstOrNull() ?: false
+                                    }
+                                    Unit
+                                },
+                                onRequestSmsPerms = {
+                                    coroutineScope.launch {
+                                        val results = permissionsManager.requestPermissions(AgentPermission.SEND_SMS)
+                                        hasSmsPerms = results.values.firstOrNull() ?: false
+                                    }
+                                    Unit
+                                },
+                                onRequestAccountsPerms = {
+                                    coroutineScope.launch {
+                                        val results = permissionsManager.requestPermissions(AgentPermission.GET_ACCOUNTS)
+                                        hasAccountsPerms = results.values.firstOrNull() ?: false
+                                    }
+                                    Unit
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
-    }
     }
 }
 
