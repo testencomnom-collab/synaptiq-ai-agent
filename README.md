@@ -70,6 +70,111 @@ graph TD;
 
 ---
 
+## 🔬 Deep Dive: Wie die Automatisierung wirklich funktioniert
+
+Gerne lassen wir uns wirklich tief in den Code abtauchen. Android hat sehr strenge Sicherheitsrichtlinien (Sandboxing), weshalb eine App eigentlich nicht einfach andere Apps fernsteuern darf. Um "alles" zu automatisieren, mussten wir ein paar extrem mächtige Android-Features kombinieren. Hier ist die **extrem genaue** Erklärung, aufgeteilt in die drei Bausteine unseres Systems:
+
+### 1. Das Gehirn: Prompting & JSON-Routing (`LLMAgentService.kt`)
+Zuerst muss die KI (egal ob Cloud-API oder lokales Gemma-Modell) verstehen, dass sie nicht nur chatten, sondern *handeln* soll. 
+Dafür haben wir ihr einen strikten "System Prompt" geschrieben:
+```json
+{
+   "hasAction": true,
+   "actionType": "SYSTEM_ACTION",
+   "systemAction": {
+      "targetApp": "whatsapp",
+      "recipient": "Max",
+      "instruction": "Hallo, bin gleich da!"
+   }
+}
+```
+Die KI zwingt sich selbst, genau dieses JSON zurückzugeben. Unser Kotlin-Code fängt dieses JSON ab, parst es und schickt es an unseren `ActionHandler`.
+
+### 2. Die System-Hardware & Intents (`ActionHandler.kt`)
+Wenn das JSON im `ActionHandler` ankommt, wird als erstes geprüft, was unter `targetApp` steht. Hier nutzen wir native Android **Intents** (systemweite Botschaften) und System-Services.
+
+**A. Die Taschenlampe (Hardware-Service)**
+```kotlin
+"flashlight" -> {
+    // 1. Hole dir den direkten Draht zum Hardware-Kamera-Dienst von Android
+    val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    // 2. Finde die ID der primären Rückkamera (id 0)
+    val cameraId = cameraManager.cameraIdList[0] 
+    // 3. Schalte den Strom für den LED-Blitz ("Torch Mode") ein
+    cameraManager.setTorchMode(cameraId, true) 
+}
+```
+Das passiert ohne Umwege in Millisekunden direkt auf dem Mainboard deines Handys.
+
+**B. Timer & Wecker (System Intents)**
+Hier nutzen wir die `AlarmClock`-API. Anstatt die Uhr-App zu öffnen und zu klicken, rufen wir sie über das System auf und übergeben direkt die Parameter:
+```kotlin
+"timer" -> {
+    val intent = Intent(AlarmClock.ACTION_SET_TIMER).apply {
+        putExtra(AlarmClock.EXTRA_LENGTH, 300) // 5 Minuten in Sekunden
+        putExtra(AlarmClock.EXTRA_MESSAGE, "AI Timer")
+        putExtra(AlarmClock.EXTRA_SKIP_UI, false) // Timer direkt im Hintergrund starten
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(intent) // Feuert den Intent ans System
+}
+```
+
+**C. Spotify (Media Intents)**
+Anstatt in Spotify nach einem Song zu suchen, nutzen wir einen speziellen Media-Search-Intent:
+```kotlin
+"spotify" -> {
+    val intent = Intent(Intent.ACTION_MAIN).apply {
+        action = "android.media.action.MEDIA_PLAY_FROM_SEARCH" // Spezielle Android Aktion
+        setPackage("com.spotify.music") // Zwingt Android, diesen Befehl NUR an Spotify zu senden
+        putExtra(SearchManager.QUERY, "Shape of You") // Der gesuchte Song/Artist
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(intent)
+}
+```
+
+### 3. Die Geisterhand (`AgentAccessibilityService.kt`)
+Was aber, wenn wir Apps bedienen wollen, die keine solchen "Intents" anbieten? Zum Beispiel Instagram Direct, WhatsApp oder Snapchat. Hier kommt die "Geisterhand" zum Einsatz.
+Wir haben einen eigenen **AccessibilityService** programmiert. Das ist eine System-Berechtigung, die du in den Android-Einstellungen manuell erlauben musst. Ist sie aktiv, hat unsere App "Root-ähnliche" Sicht auf den gesamten Bildschirm.
+
+Wenn der `ActionHandler` sieht, dass eine Nachricht über WhatsApp geschickt werden soll:
+1. Schreibt er Ziel ("Max") und Nachricht in ein globales `AutomationState`-Objekt.
+2. Er öffnet WhatsApp über einen simplen App-Start-Intent (`context.packageManager.getLaunchIntentForPackage("com.whatsapp")`).
+
+Jetzt übernimmt der **AccessibilityService**, der bei jeder noch so kleinen Bildschirmänderung (Event) vom Android-System gerufen wird:
+
+**Schritt 1: Den Kontakt finden und klicken**
+```kotlin
+val rootNode = rootInActiveWindow // Liest alle aktuell sichtbaren Elemente (Texte, Buttons) des Bildschirms aus
+val contactNodes = rootNode.findAccessibilityNodeInfosByText("Max") // Sucht nach dem Namen
+if (contactNodes.isNotEmpty()) {
+    val node = contactNodes.first()
+    // Simuliert einen physischen Touch-Klick des Users auf dieses Element!
+    node.performAction(AccessibilityNodeInfo.ACTION_CLICK) 
+    AutomationState.step = 2 // Geht zum nächsten Schritt über
+}
+```
+
+**Schritt 2: Nachricht tippen & Senden Button finden**
+*(Da das Einfügen des Textes über die System-Zwischenablage in einer anderen Datei geschieht, suchen wir im Service nur nach dem "Senden" Knopf)*
+```kotlin
+// Der Service scannt den Chat nach dem Text "Senden" (oder dem WhatsApp View-ID für den Button)
+val finalSendNodes = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/send")
+val descNodes = rootNode.findAccessibilityNodeInfosByText("Senden")
+val allFinal = finalSendNodes + descNodes
+
+if (allFinal.isNotEmpty()) {
+    val btn = allFinal.first()
+    btn.performAction(AccessibilityNodeInfo.ACTION_CLICK) // Klickt "Senden"
+    AutomationState.isRunning = false // Geisterhand schaltet sich ab
+}
+```
+
+**Das Geniale daran:** Diese `AccessibilityEvents` feuern hunderte Male pro Sekunde. Der Such-und-Klick-Vorgang passiert so unfassbar schnell, dass das menschliche Auge fast nicht mitkommt. Es sieht buchstäblich so aus, als würde ein unsichtbarer Geist dein Handy in Rekordgeschwindigkeit bedienen!
+
+---
+
 ## 📚 Supported Local Agent Profiles
 
 Browse and download agent profiles directly from the in-app library.
