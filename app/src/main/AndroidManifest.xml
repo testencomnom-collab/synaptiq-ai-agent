@@ -82,6 +82,12 @@
             </intent-filter>
         </service>
 
+        <activity
+            android:name=".ui.ConfirmationActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.DeviceDefault.Light.Dialog"
+            android:excludeFromRecents="true" />
+
     </application>
 
 </manifest>

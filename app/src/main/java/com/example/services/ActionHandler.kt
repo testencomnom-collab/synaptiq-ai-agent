@@ -19,6 +19,17 @@ import android.app.SearchManager
 
 object ActionHandler {
 
+    private fun requireConfirmation(context: Context, targetIntent: Intent, message: String, targetApp: String? = null, targetRecipient: String? = null) {
+        val confirmIntent = Intent(context, com.example.ui.ConfirmationActivity::class.java).apply {
+            putExtra("TARGET_INTENT", targetIntent)
+            putExtra("CONFIRM_MESSAGE", message)
+            putExtra("TARGET_APP", targetApp)
+            putExtra("TARGET_RECIPIENT", targetRecipient)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(confirmIntent)
+    }
+
     suspend fun handleCalendarAction(context: Application, json: JSONObject): Boolean {
         val calTitle = json.optString("calendarTitle")
         val calDesc = json.optString("calendarDesc")
@@ -39,7 +50,7 @@ object ActionHandler {
                 val sdf = SimpleDateFormat("h:mm a (MMM d)", Locale.getDefault())
                 Toast.makeText(
                     context,
-                    "Scheduled event: \"$calTitle\" at ${sdf.format(Date(start))}",
+                    "Scheduled event: \"\$calTitle\" at \${sdf.format(Date(start))}",
                     Toast.LENGTH_LONG
                 ).show()
                 return true
@@ -69,7 +80,7 @@ object ActionHandler {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             Toast.makeText(context, "Opening email composer draft...", Toast.LENGTH_SHORT).show()
-            context.startActivity(emailIntent)
+            requireConfirmation(context, emailIntent, "E-Mail an \$rec vorbereiten?")
             return true
         }
         return false
@@ -92,7 +103,7 @@ object ActionHandler {
                     Toast.makeText(context, if (turnOn) "Flashlight ON" else "Flashlight OFF", Toast.LENGTH_SHORT).show()
                     true
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Could not control flashlight: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Could not control flashlight: \${e.message}", Toast.LENGTH_SHORT).show()
                     false
                 }
             }
@@ -108,7 +119,7 @@ object ActionHandler {
                         putExtra(AlarmClock.EXTRA_MESSAGE, sysRecipient.ifEmpty { "AI Alarm" })
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                    context.startActivity(intent)
+                    requireConfirmation(context, intent, "Wecker für \$hour:\$minute stellen?")
                     return true
                 }
             }
@@ -120,7 +131,7 @@ object ActionHandler {
                     putExtra(AlarmClock.EXTRA_SKIP_UI, false)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                context.startActivity(intent)
+                requireConfirmation(context, intent, "Timer für \$minutes Minuten stellen?")
                 return true
             }
             "spotify" -> {
@@ -131,14 +142,14 @@ object ActionHandler {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 return try {
-                    context.startActivity(intent)
+                    requireConfirmation(context, intent, "Spotify Suche nach: \$finalInstruction durchführen?")
                     true
                 } catch (e: Exception) {
                     // Fallback to opening app
                     val launchIntent = context.packageManager.getLaunchIntentForPackage("com.spotify.music")
                     if (launchIntent != null) {
                         launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(launchIntent)
+                        requireConfirmation(context, launchIntent, "Spotify öffnen?")
                         true
                     } else false
                 }
@@ -148,7 +159,7 @@ object ActionHandler {
                     putExtra(SearchManager.QUERY, finalInstruction)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                context.startActivity(intent)
+                requireConfirmation(context, intent, "Im Web nach '\$finalInstruction' suchen?")
                 return true
             }
         }
@@ -194,15 +205,6 @@ object ActionHandler {
                     )
 
                     if (targetPackage in messagingApps && finalInstruction.isNotEmpty()) {
-                        if (sysRecipient.isNotEmpty()) {
-                            AgentAccessibilityService.AutomationState.isRunning = true
-                            AgentAccessibilityService.AutomationState.targetApp = targetPackage
-                            AgentAccessibilityService.AutomationState.recipient = sysRecipient
-                            AgentAccessibilityService.AutomationState.step = 1
-                        } else {
-                            AgentAccessibilityService.AutomationState.isRunning = false
-                        }
-
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
                             setType("text/plain")
                             setPackage(targetPackage)
@@ -210,15 +212,14 @@ object ActionHandler {
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
                         try {
-                            context.startActivity(shareIntent)
-                            Toast.makeText(context, "Opening $sysApp with message...", Toast.LENGTH_LONG).show()
+                            val msg = "Nachricht via \$sysApp senden?"
+                            requireConfirmation(context, shareIntent, msg, targetPackage, sysRecipient)
                             return true
                         } catch (e: Exception) {
                             val launchIntent = pm.getLaunchIntentForPackage(targetPackage)
                             if (launchIntent != null) {
                                 launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                context.startActivity(launchIntent)
-                                Toast.makeText(context, "Opened $sysApp (send message manually)", Toast.LENGTH_LONG).show()
+                                requireConfirmation(context, launchIntent, "\$sysApp öffnen?")
                                 return true
                             }
                         }
@@ -226,16 +227,15 @@ object ActionHandler {
                         val launchIntent = pm.getLaunchIntentForPackage(targetPackage)
                         if (launchIntent != null) {
                             launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            context.startActivity(launchIntent)
-                            Toast.makeText(context, "Opened $sysApp", Toast.LENGTH_SHORT).show()
+                            requireConfirmation(context, launchIntent, "\$sysApp öffnen?")
                             return true
                         } else {
-                            Toast.makeText(context, "$sysApp is not installed on this device.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "\$sysApp is not installed on this device.", Toast.LENGTH_LONG).show()
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e("ActionHandler", "Failed to launch $sysApp", e)
-                    Toast.makeText(context, "Could not open $sysApp: ${e.message}", Toast.LENGTH_LONG).show()
+                    Log.e("ActionHandler", "Failed to launch \$sysApp", e)
+                    Toast.makeText(context, "Could not open \$sysApp: \${e.message}", Toast.LENGTH_LONG).show()
                 }
             } else {
                 val installed = pm.getInstalledApplications(0)
@@ -246,12 +246,11 @@ object ActionHandler {
                     val launchIntent = pm.getLaunchIntentForPackage(match.packageName)
                     if (launchIntent != null) {
                         launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(launchIntent)
-                        Toast.makeText(context, "Opened $sysApp", Toast.LENGTH_SHORT).show()
+                        requireConfirmation(context, launchIntent, "\$sysApp öffnen?")
                         return true
                     }
                 } else {
-                    Toast.makeText(context, "App '$sysApp' not found on device.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "App '\$sysApp' not found on device.", Toast.LENGTH_LONG).show()
                 }
             }
         }

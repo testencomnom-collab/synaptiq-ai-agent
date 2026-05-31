@@ -16,7 +16,7 @@ object LLMServiceClient {
     private val httpClient: OkHttpClient by lazy {
         val logging = HttpLoggingInterceptor().apply {
             level = if (com.example.BuildConfig.DEBUG) {
-                HttpLoggingInterceptor.Level.BODY
+                HttpLoggingInterceptor.Level.BASIC
             } else {
                 HttpLoggingInterceptor.Level.NONE
             }
