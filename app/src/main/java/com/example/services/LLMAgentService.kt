@@ -55,48 +55,16 @@ class LLMAgentService(
         val model = preferencesManager.getActiveModel()
 
         // 1. HYBRID-ROUTING-SYSTEM: Weichenstellung
+        val useLocal = (agentId != "system" && agentId.isNotEmpty())
+        var apiErrorFallback = false
+        var apiFallbackReason = ""
 
-        // PFAD B: Echter Lokaler Modus (On-Device MediaPipe)
-        if (agentId != "system" && agentId.isNotEmpty()) {
-            Log.d(TAG, "Routing to Local On-Device Mode for Agent: $agentId")
-            if (!isLocalEngineReady) {
-                isLocalEngineReady = localEngine.initialize() 
-            }
-            if (!isLocalEngineReady) {
-                return@withContext AgentProposal(
-                    thought = "Lokale Modellgewichte fehlen oder Engine Error.",
-                    responseText = "Fehler: Das MediaPipe Modell für $agentId (" +
-                                 "gemma_2b_it_cpu_int4.bin) ist nicht aktiv. Bitte lade " +
-                                 "das echte Modell in der Bibliothek herunter.",
-                    hasAction = false,
-                    actionType = "NONE"
-                )
-            }
-            
-            val agentConfig = repository.getAgentConfig(agentId)
-            val agentLang = preferencesManager.agentLanguage
-            val sysPrompt = (agentConfig?.systemPrompt ?: "Du bist ein lokaler KI Assistent.") + " WICHTIG: Antworte in dieser Sprache: $agentLang"
-            // Clean specific templating ideal for Gemma instruction tuned models
-            val fullPrompt = "<start_of_turn>user\n${sysPrompt}\n\nUser: $userQuery\n<end_of_turn>\n<start_of_turn>model\n"
-            
-            val response = localEngine.generateResponse(fullPrompt)
-            return@withContext AgentProposal(
-                thought = "PFAD B: 100% Offline-Ausführung (Gemma 2B). Keine Cloud-APIs oder Netzwerke genutzt.",
-                responseText = response.trim(),
-                hasAction = false,
-                actionType = "NONE"
-            )
-        }
-
-        // PFAD A: Cloud-Modus (Open AI / Anthropic / Gemini Rest APIs)
-        if (apiKey.trim().isEmpty()) {
-            return@withContext AgentProposal(
-                thought = "Cloud-API-Routing (PFAD A) fehlgeschlagen: Kein Key konfiguriert.",
-                responseText = "Hinweis: Für den Cloud-Chat ist kein API-Key hinterlegt. Bitte wechsle zu den Einstellungen (Settings) und trage einen gültigen API-Schlüssel ein, um die Live-KI API zu nutzen. Alternativ kannst du offline mit lokalen Agenten chatten.",
-                hasAction = false,
-                actionType = "NONE"
-            )
-        }
+        if (!useLocal) {
+            // PFAD A: Cloud-Modus (Open AI / Anthropic / Gemini Rest APIs)
+            if (apiKey.trim().isEmpty()) {
+                apiErrorFallback = true
+                apiFallbackReason = "Kein API Key konfiguriert"
+            } else {
 
         // 1. Gather Calendar data for next 7 days
         val now = Calendar.getInstance()
@@ -371,15 +339,56 @@ class LLMAgentService(
             )
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error executing agent action query", e)
-            val cleanMsg = e.message ?: "An unknown connection error occurred."
+            Log.e(TAG, "Error executing agent action query, initiating Hybrid Fallback", e)
+            apiErrorFallback = true
+            apiFallbackReason = e.message ?: "Network error"
+        }
+            } // Close the `else` block for apiKey.trim().isNotEmpty()
+        } // Close the `if (!useLocal)` block
+
+        // PFAD B: Echter Lokaler Modus (On-Device MediaPipe)
+        if (useLocal || apiErrorFallback) {
+            Log.d(TAG, "Routing to Local On-Device Mode for Agent: ${if (apiErrorFallback) "Fallback System" else agentId}")
+            if (!isLocalEngineReady) {
+                isLocalEngineReady = localEngine.initialize() 
+            }
+            if (!isLocalEngineReady) {
+                return@withContext AgentProposal(
+                    thought = "Lokale Modellgewichte fehlen oder Engine Error.",
+                    responseText = "Fehler: Das MediaPipe Modell ist nicht aktiv. Bitte lade das Modell in der Bibliothek herunter.",
+                    hasAction = false,
+                    actionType = "NONE"
+                )
+            }
+            
+            val activeAgentId = if (useLocal) agentId else "system"
+            val agentConfig = if (activeAgentId != "system") repository.getAgentConfig(activeAgentId) else null
+            val agentLang = preferencesManager.agentLanguage
+            val sysPrompt = (agentConfig?.systemPrompt ?: "Du bist ein intelligenter lokaler KI Assistent. Antworte immer hilfsbereit und freundlich.") + " WICHTIG: Antworte in dieser Sprache: $agentLang"
+            
+            val fullPrompt = "<start_of_turn>user\n${sysPrompt}\n\nUser: $userQuery\n<end_of_turn>\n<start_of_turn>model\n"
+            
+            val response = localEngine.generateResponse(fullPrompt)
+            val thoughtMsg = if (apiErrorFallback) {
+                "Cloud-API fehlgeschlagen ($apiFallbackReason). Automatischer Hybrid-Fallback auf 100% Offline-Ausführung (Gemma 2B)."
+            } else {
+                "PFAD B: 100% Offline-Ausführung (Gemma 2B). Keine Cloud-APIs oder Netzwerke genutzt."
+            }
             return@withContext AgentProposal(
-                thought = "Error: $cleanMsg",
-                responseText = "I encountered an API error. Please verify your internet connection, active subscription state, or API Key inside Settings:\n\n**Error Details:**\n$cleanMsg",
+                thought = thoughtMsg,
+                responseText = response.trim(),
                 hasAction = false,
                 actionType = "NONE"
             )
         }
+        
+        // Fallback for edge cases
+        return@withContext AgentProposal(
+            thought = "System Error",
+            responseText = "Fehler im Hybrid-Routing-System.",
+            hasAction = false,
+            actionType = "NONE"
+        )
     }
 
     suspend fun generateDirectReply(agentId: String, prompt: String): String = withContext(Dispatchers.IO) {
