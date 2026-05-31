@@ -86,6 +86,12 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
         initialValue = emptyList()
     )
 
+    val memories: StateFlow<List<com.example.data.model.MemoryEntity>> = repository.allMemoriesFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
     val isLoading = MutableStateFlow(false)
     val statusMessage = MutableStateFlow<String?>(null)
     val isAutoReplyEnabled = MutableStateFlow(false)
@@ -413,6 +419,19 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
         viewModelScope.launch {
             repository.clearNotifications()
             statusMessage.value = "Notifications cleared."
+        }
+    }
+
+    fun deleteMemory(id: Int) {
+        viewModelScope.launch {
+            repository.deleteMemory(id)
+        }
+    }
+
+    fun clearAllMemories() {
+        viewModelScope.launch {
+            repository.clearMemories()
+            statusMessage.value = "Alle Erinnerungen gelöscht."
         }
     }
 

@@ -59,11 +59,21 @@ class AgentRepository(
         notificationDao.deleteAll()
     }
 
+    val allMemoriesFlow: Flow<List<MemoryEntity>> = memoryDao.getMemoriesFlow()
+
     suspend fun getAllMemories(): List<MemoryEntity> {
         return memoryDao.getAllMemories()
     }
 
     suspend fun insertMemory(memory: MemoryEntity) {
         memoryDao.insertMemory(memory)
+    }
+
+    suspend fun deleteMemory(id: Int) {
+        memoryDao.deleteMemoryById(id)
+    }
+
+    suspend fun clearMemories() {
+        memoryDao.clearMemories()
     }
 }

@@ -221,10 +221,11 @@ fun MainAgentView(
                 ) {
                     Box(modifier = Modifier.widthIn(max = 800.dp).fillMaxSize()) {
                         when (currentTab) {
-                            "chat" -> AgentChatTab(viewModel, hasCalendarPerms, onRequestPermissions = { requestCalendarPermissions() })
+                            "chat" -> AgentChatTab(viewModel, hasCalendarPerms, onRequestPermissions = { requestCalendarPermissions() }, onNavigateToMemory = { currentTab = "memory" })
                             "notifications" -> NotificationManagerTab(viewModel, onNavigateToChat = { currentTab = "chat" })
                             "calendar" -> SystemCalendarTab(viewModel, hasCalendarPerms, onRequestPermissions = { requestCalendarPermissions() })
                             "library" -> AgentLibraryTab(viewModel)
+                            "memory" -> MemoryScreen(viewModel, onBack = { currentTab = "chat" })
                             "settings" -> AgentSettingsTab(
                                 viewModel = viewModel,
                                 hasCalendarPerms = hasCalendarPerms,
@@ -277,7 +278,8 @@ fun MainAgentView(
 fun AgentChatTab(
     viewModel: AgentViewModel,
     hasCalendarPerms: Boolean,
-    onRequestPermissions: () -> Unit
+    onRequestPermissions: () -> Unit,
+    onNavigateToMemory: () -> Unit
 ) {
     val chatHistory by viewModel.chatHistory.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -290,7 +292,7 @@ fun AgentChatTab(
         if (result.resultCode == android.app.Activity.RESULT_OK) {
             val data = result.data
             val results = data?.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS)
-            val spokenText = results?.get(0)
+            val spokenText = results?.firstOrNull()
             if (!spokenText.isNullOrEmpty()) {
                 inputQuery = spokenText
             }
@@ -384,19 +386,36 @@ fun AgentChatTab(
                         }
                     }
                 }
-                IconButton(
-                    onClick = { viewModel.clearHistory() },
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(percent = 50))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                ) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Chat-Verlauf leeren",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onNavigateToMemory,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(percent = 50))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    ) {
+                        Icon(
+                            androidx.compose.material.icons.Icons.Outlined.Memory,
+                            contentDescription = "Langzeit-Gedächtnis öffnen",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        onClick = { viewModel.clearHistory() },
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(percent = 50))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Chat-Verlauf leeren",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
         }

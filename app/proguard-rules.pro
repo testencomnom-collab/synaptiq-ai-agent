@@ -26,7 +26,7 @@
 
 # Models
 -keep class com.example.data.model.** { *; }
--keep class com.example.data.network.dto.** { *; }
+-keep class com.example.data.api.** { *; }
 -keep class com.example.domain.model.** { *; }
 
 # Coroutines
