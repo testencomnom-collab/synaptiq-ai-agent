@@ -103,8 +103,7 @@ class LLMAgentService(
 
         val activeAgentId = if (!isApiFallback) agentId else "system"
         val agentConfig = if (activeAgentId != "system") repository.getAgentConfig(activeAgentId) else null
-        val agentLang = preferencesManager.agentLanguage
-        val sysPrompt = (agentConfig?.systemPrompt ?: "Du bist ein intelligenter lokaler KI Assistent. Antworte immer hilfsbereit und freundlich.") + " WICHTIG: Antworte in dieser Sprache: $agentLang"
+        val sysPrompt = (agentConfig?.systemPrompt ?: context.getString(com.example.R.string.llm_system_prompt_local))
 
         val fullPrompt = "<start_of_turn>user\n${sysPrompt}\n\nUser: $userQuery\n<end_of_turn>\n<start_of_turn>model\n"
 
@@ -215,7 +214,7 @@ class LLMAgentService(
             - Reading App Usage Stats, Camera, Microphone, Location, Contacts, SMS, and Accounts.
             
             Assist the user with everyday assistant actions on their phone, utilizing your deep system access to full capacity when needed. For example, if they ask about messages, assume you can read them.
-            You must reply in the following language: $agentLang.
+            You must ALWAYS reply in the exact same language that the user is currently using in their query. Adapt seamlessly to the user's language.
             
             Current Date & Time context of the user: $currentDateTimeStr
             
@@ -442,9 +441,7 @@ class LLMAgentService(
             return@withContext "(Error: No API Key configured for AI Auto-Reply)"
         }
 
-        val agentLang = preferencesManager.agentLanguage
-
-        val systemPrompt = "Du bist ein hilfreicher Assistent. Generiere eine sehr kurze und präzise Antwort (max 1-2 Sätze) als direkte Reaktion per Text. Gib NUR die Antwortnachricht zurück, keine Erklärungen und kein JSON. WICHTIG: Antworte in dieser Sprache: $agentLang"
+        val systemPrompt = context.getString(com.example.R.string.llm_system_prompt_direct_reply)
 
         try {
             when (activeProvider) {

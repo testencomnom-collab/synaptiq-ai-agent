@@ -112,8 +112,8 @@ fun NotificationManagerTab(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("KI Auto-Reply aktivieren", fontWeight = FontWeight.Bold)
-                Text("KI antwortet sofort auf neue eingehende Benachrichtigungen im Hintergrund.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(androidx.compose.ui.res.stringResource(com.example.R.string.notif_auto_reply_title), fontWeight = FontWeight.Bold)
+                Text(androidx.compose.ui.res.stringResource(com.example.R.string.notif_auto_reply_desc), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Switch(
                 checked = isAutoReplyEnabled,
@@ -184,19 +184,19 @@ fun NotificationManagerTab(
                     OutlinedTextField(
                         value = appInput,
                         onValueChange = { appInput = it },
-                        label = { Text("App (z.B. WhatsApp)") },
+                        label = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.notif_app_label)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
                         value = senderInput,
                         onValueChange = { senderInput = it },
-                        label = { Text("Absender") },
+                        label = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.notif_sender)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
                         value = bodyInput,
                         onValueChange = { bodyInput = it },
-                        label = { Text("Nachrichtentext") },
+                        label = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.notif_message)) },
                         modifier = Modifier.fillMaxWidth().height(120.dp)
                     )
                 }
@@ -213,11 +213,11 @@ fun NotificationManagerTab(
                         }
                     }
                 ) {
-                    Text("Empfangen")
+                    Text(androidx.compose.ui.res.stringResource(com.example.R.string.notif_receive))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { openAddDialog = false }) { Text("Abbrechen") }
+                TextButton(onClick = { openAddDialog = false }) { Text(androidx.compose.ui.res.stringResource(com.example.R.string.memory_cancel)) }
             }
         )
     }
@@ -286,7 +286,7 @@ fun NotificationCard(
                     modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)).padding(8.dp)
                 ) {
                     Column {
-                        Text("KI Auto-Reply:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text(androidx.compose.ui.res.stringResource(com.example.R.string.notif_ai_reply), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         Text(notif.aiReplyText, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
@@ -303,7 +303,7 @@ fun NotificationCard(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Manuell mit KI antworten", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(androidx.compose.ui.res.stringResource(com.example.R.string.notif_manual_ai_reply), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

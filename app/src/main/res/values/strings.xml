@@ -8,5 +8,51 @@
     <string name="nav_settings">Settings</string>
     <string name="settings_title">Settings</string>
     <string name="settings_language">Language</string>
+    <string name="settings_language_desc">Choose the preferred app interface and AI Agent reply language:</string>
     <string name="settings_permissions">Permissions</string>
+    <string name="llm_system_prompt_local">You are an intelligent local AI Assistant. Always answer in a helpful and friendly manner. IMPORTANT: You must ALWAYS reply in the exact same language that the user is currently using in their query. Adapt seamlessly to the user\'s language.</string>
+    <string name="llm_system_prompt_direct_reply">You are a helpful assistant. Generate a very short and precise text reply (max 1-2 sentences). ONLY return the message text, no explanations and no JSON. IMPORTANT: You must ALWAYS reply in the exact same language that the user is currently using in their query. Adapt seamlessly to the user\'s language.</string>
+    <string name="chat_generating">Agent is generating a response...</string>
+    <string name="chat_input_hint">Enter automation command...</string>
+    <string name="sys_active">SYSTEM ACTIVE</string>
+    <string name="offline_mode">OFFLINE MODE ACTIVE</string>
+    <string name="library_title">Local Agent Library</string>
+    <string name="library_subtitle">10 Specialized On-Device AI Extensions</string>
+    <string name="library_active">ACTIVE</string>
+    <string name="library_inactive">INACTIVE</string>
+    <string name="library_info">Download specialized local agents to expand the capabilities of your main agent. It will control them in the background for complex tasks.</string>
+    <string name="library_ready_download">READY TO DOWNLOAD</string>
+    <string name="library_downloading">Downloading...</string>
+    <string name="library_install">Install Local Agent</string>
+    
+    <string name="calendar_title">Event Title</string>
+    <string name="calendar_desc">Description / Details</string>
+    <string name="calendar_book">Book Event</string>
+    <string name="calendar_cancel">Cancel</string>
+    
+    <string name="settings_reset_memory">Reset Full History &amp; Memory</string>
+    <string name="settings_allow">Allow</string>
+    <string name="settings_enable">Enable</string>
+    <string name="settings_perm_accessibility">Accessibility Services</string>
+    <string name="settings_perm_accessibility_desc">Agent can read screen &amp; tap</string>
+    <string name="settings_perm_notifications">Notification Access</string>
+    <string name="settings_perm_notifications_desc">Agent can read incoming messages</string>
+    <string name="settings_perm_usage">Usage Data Access</string>
+    <string name="settings_perm_usage_desc">Agent can see which app is active</string>
+    <string name="settings_perm_calendar">Allow Calendar Access</string>
+    
+    <string name="memory_clear_title">Delete Memory?</string>
+    <string name="memory_clear_desc">Do you really want to delete all learned facts about you? This cannot be undone.</string>
+    <string name="memory_clear_confirm">Delete</string>
+    <string name="memory_cancel">Cancel</string>
+    <string name="memory_long_term">Long-Term Memory</string>
+    
+    <string name="notif_auto_reply_title">Enable AI Auto-Reply</string>
+    <string name="notif_auto_reply_desc">AI will respond immediately to new incoming notifications in the background.</string>
+    <string name="notif_app_label">App (e.g. WhatsApp)</string>
+    <string name="notif_sender">Sender</string>
+    <string name="notif_message">Message Text</string>
+    <string name="notif_receive">Receive</string>
+    <string name="notif_ai_reply">AI Auto-Reply:</string>
+    <string name="notif_manual_ai_reply">Reply manually with AI</string>
 </resources>

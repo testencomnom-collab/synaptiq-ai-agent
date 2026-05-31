@@ -60,14 +60,14 @@ fun AgentLibraryTab(viewModel: AgentViewModel) {
             ) {
                 Column {
                     Text(
-                        text = "Lokale Agenten-Bibliothek",
+                        text = androidx.compose.ui.res.stringResource(com.example.R.string.library_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         letterSpacing = (-0.5).sp
                     )
                     Text(
-                        text = "10 Spezialisierte On-Device KI-Erweiterungen",
+                        text = androidx.compose.ui.res.stringResource(com.example.R.string.library_subtitle),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Medium
@@ -82,7 +82,7 @@ fun AgentLibraryTab(viewModel: AgentViewModel) {
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "${activeAgents.size} AKTIV",
+                        text = "${activeAgents.size} ${androidx.compose.ui.res.stringResource(com.example.R.string.library_active)}",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -147,7 +147,7 @@ fun AgentLibraryTab(viewModel: AgentViewModel) {
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Lade spezialisierte lokale Agenten herunter, um die Fähigkeiten deines Haupt-Agenten zu erweitern. Er wird sie bei komplexen Aufgaben im Hintergrund steuern.",
+                            text = androidx.compose.ui.res.stringResource(com.example.R.string.library_info),
                             style = MaterialTheme.typography.bodyMedium,
                             fontSize = 12.sp,
                             lineHeight = 18.sp,
@@ -285,7 +285,7 @@ fun AgentMarketplaceCard(
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = if (isActive) "AKTIV" else "INAKTIV",
+                                text = if (isActive) androidx.compose.ui.res.stringResource(com.example.R.string.library_active) else androidx.compose.ui.res.stringResource(com.example.R.string.library_inactive),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isActive) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant
@@ -312,7 +312,7 @@ fun AgentMarketplaceCard(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "BEREIT ZUM DOWNLOAD",
+                            text = androidx.compose.ui.res.stringResource(com.example.R.string.library_ready_download),
                             fontSize = 8.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -349,7 +349,7 @@ fun AgentMarketplaceCard(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Lade herunter... (${(downloadProgress * 100).toInt()}%)",
+                                text = "${androidx.compose.ui.res.stringResource(com.example.R.string.library_downloading)} (${(downloadProgress * 100).toInt()}%)",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -394,7 +394,7 @@ fun AgentMarketplaceCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Lokalen Agenten installieren",
+                        text = androidx.compose.ui.res.stringResource(com.example.R.string.library_install),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )

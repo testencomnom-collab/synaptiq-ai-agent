@@ -351,7 +351,7 @@ fun AgentChatTab(
                         }
                         if (activeAgentId == "system") {
                             Text(
-                                text = "SYSTEM ACTIVE",
+                                text = stringResource(R.string.sys_active),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
@@ -362,7 +362,7 @@ fun AgentChatTab(
                                 Icon(Icons.Default.CloudOff, contentDescription = "Offline", modifier = Modifier.size(12.dp), tint = Color(0xFF10B981))
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "OFFLINE-MODUS AKTIV",
+                                    text = stringResource(R.string.offline_mode),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF10B981),
@@ -461,7 +461,7 @@ fun AgentChatTab(
                         contentPadding = PaddingValues(horizontal = 8.dp),
                         modifier = Modifier.height(32.dp)
                     ) {
-                        Text("Allow", fontSize = 11.sp)
+                        Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_allow), fontSize = 11.sp)
                     }
                 }
             }
@@ -684,7 +684,7 @@ fun AgentChatTab(
                     enabled = !isLoading,
                     placeholder = { 
                         Text(
-                            if (isLoading) "Agent generiert Antwort..." else "Automatisierungs-Befehl eingeben...", 
+                            if (isLoading) stringResource(R.string.chat_generating) else stringResource(R.string.chat_input_hint), 
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), 
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
@@ -1297,7 +1297,7 @@ fun SystemCalendarTab(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text("Kalenderzugriff erlauben", fontWeight = FontWeight.Bold)
+                        Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_perm_calendar), fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -1372,14 +1372,14 @@ fun SystemCalendarTab(
                     OutlinedTextField(
                         value = createTitle,
                         onValueChange = { createTitle = it },
-                        label = { Text("Titel des Termins") },
+                        label = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.calendar_title)) },
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
                         value = createDesc,
                         onValueChange = { createDesc = it },
-                        label = { Text("Beschreibung / Details") },
+                        label = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.calendar_desc)) },
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -1417,7 +1417,7 @@ fun SystemCalendarTab(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Buchen")
+                    Text(androidx.compose.ui.res.stringResource(com.example.R.string.calendar_book))
                 }
             },
             dismissButton = {
@@ -1425,7 +1425,7 @@ fun SystemCalendarTab(
                     onClick = { testCreateDialog = false },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                 ) { 
-                    Text("Abbrechen") 
+                    Text(androidx.compose.ui.res.stringResource(com.example.R.string.calendar_cancel)) 
                 }
             }
         )
@@ -1563,63 +1563,14 @@ fun AgentSettingsTab(
             }
         }
 
-        // --- App UI Language Configuration ---
+        // --- Unified Language Configuration (App + Agent) ---
         item {
-            var showAppLangMenu by remember { mutableStateOf(false) }
+            var showLangMenu by remember { mutableStateOf(false) }
             val currentAppLang = AppCompatDelegate.getApplicationLocales().toLanguageTags().let { 
                 if (it.contains("de", ignoreCase = true)) "Deutsch" 
                 else if (it.contains("es", ignoreCase = true)) "Español"
                 else "English"
             }
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        stringResource(R.string.settings_language),
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Box {
-                        OutlinedButton(
-                            onClick = { showAppLangMenu = true },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("UI: \$currentAppLang")
-                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select UI Language")
-                            }
-                        }
-                        DropdownMenu(
-                            expanded = showAppLangMenu,
-                            onDismissRequest = { showAppLangMenu = false }
-                        ) {
-                            listOf("English" to "en", "Deutsch" to "de", "Español" to "es").forEach { (langName, tag) ->
-                                DropdownMenuItem(
-                                    text = { Text(langName) },
-                                    onClick = {
-                                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
-                                        showAppLangMenu = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // --- Language Configuration ---
-        item {
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
@@ -1632,13 +1583,13 @@ fun AgentSettingsTab(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.Language,
-                            contentDescription = "Agent Language",
+                            contentDescription = stringResource(R.string.settings_language),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Agent Spracheinstellungen",
+                            stringResource(R.string.settings_language),
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = MaterialTheme.colorScheme.onSurface
@@ -1646,7 +1597,7 @@ fun AgentSettingsTab(
                     }
 
                     Text(
-                        "Wähle die bevorzugte Antwortsprache deines KI Agenten:",
+                        stringResource(R.string.settings_language_desc),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1657,20 +1608,21 @@ fun AgentSettingsTab(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text(agentLang)
+                            Text(currentAppLang)
                             Spacer(modifier = Modifier.weight(1f))
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Sprache wählen")
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Select Language")
                         }
                         DropdownMenu(
                             expanded = showLangMenu,
                             onDismissRequest = { showLangMenu = false },
                             modifier = Modifier.fillMaxWidth(0.9f)
                         ) {
-                            supportedLanguages.forEach { lang ->
+                            listOf("English" to "en", "Deutsch" to "de", "Español" to "es").forEach { (langName, tag) ->
                                 DropdownMenuItem(
-                                    text = { Text(lang) },
+                                    text = { Text(langName) },
                                     onClick = {
-                                        viewModel.setAgentLanguage(lang)
+                                        viewModel.setAgentLanguage(langName)
+                                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
                                         showLangMenu = false
                                     }
                                 )
@@ -2159,8 +2111,8 @@ fun AgentSettingsTab(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Bedienungshilfen (Accessibility)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text("Agent kann Bildschirm lesen & tippen", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_perm_accessibility), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_perm_accessibility_desc), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         if (com.example.permissions.SpecialPermissionsHelper.isAccessibilityServiceEnabled(context)) {
                             Icon(Icons.Default.CheckCircle, "Aktiv", tint = Color(0xFF4CAF50))
@@ -2170,7 +2122,7 @@ fun AgentSettingsTab(
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), contentColor = MaterialTheme.colorScheme.primary),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text("Aktivieren", fontSize = 12.sp)
+                                Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_enable), fontSize = 12.sp)
                             }
                         }
                     }
@@ -2184,8 +2136,8 @@ fun AgentSettingsTab(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Benachrichtigungs-Zugriff", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text("Agent kann eingehende Nachrichten lesen", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_perm_notifications), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_perm_notifications_desc), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         if (com.example.permissions.SpecialPermissionsHelper.isNotificationListenerEnabled(context)) {
                             Icon(Icons.Default.CheckCircle, "Aktiv", tint = Color(0xFF4CAF50))
@@ -2195,7 +2147,7 @@ fun AgentSettingsTab(
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), contentColor = MaterialTheme.colorScheme.primary),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text("Aktivieren", fontSize = 12.sp)
+                                Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_enable), fontSize = 12.sp)
                             }
                         }
                     }
@@ -2209,8 +2161,8 @@ fun AgentSettingsTab(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Nutzungsdaten-Zugriff", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text("Agent sieht, welche App offen ist", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_perm_usage), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_perm_usage_desc), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         if (com.example.permissions.SpecialPermissionsHelper.isUsageStatsEnabled(context)) {
                             Icon(Icons.Default.CheckCircle, "Aktiv", tint = Color(0xFF4CAF50))
@@ -2220,7 +2172,7 @@ fun AgentSettingsTab(
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), contentColor = MaterialTheme.colorScheme.primary),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text("Aktivieren", fontSize = 12.sp)
+                                Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_enable), fontSize = 12.sp)
                             }
                         }
                     }
@@ -2304,7 +2256,7 @@ fun AgentSettingsTab(
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), contentColor = MaterialTheme.colorScheme.primary),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text("Aktivieren", fontSize = 12.sp)
+                                Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_enable), fontSize = 12.sp)
                             }
                         }
                     }
@@ -2354,7 +2306,7 @@ fun AgentSettingsTab(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Verlauf & Chats vollständig zurücksetzen", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_reset_memory), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -2462,7 +2414,7 @@ fun PermissionItemRow(
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 modifier = Modifier.height(32.dp)
             ) {
-                Text("Zulassen", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(androidx.compose.ui.res.stringResource(com.example.R.string.settings_allow), fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

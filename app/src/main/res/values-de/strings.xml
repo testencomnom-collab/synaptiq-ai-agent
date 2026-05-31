@@ -8,5 +8,51 @@
     <string name="nav_settings">Einstellungen</string>
     <string name="settings_title">Einstellungen</string>
     <string name="settings_language">Sprache</string>
+    <string name="settings_language_desc">Wähle die bevorzugte App-Sprache und Antwortsprache deines KI Agenten:</string>
     <string name="settings_permissions">Berechtigungen</string>
+    <string name="llm_system_prompt_local">Du bist ein intelligenter lokaler KI Assistent. Antworte immer hilfsbereit und freundlich. WICHTIG: Antworte IMMER exakt in der Sprache, in der der Nutzer mit dir schreibt. Passe dich nahtlos der Sprache des Nutzers an.</string>
+    <string name="llm_system_prompt_direct_reply">Du bist ein hilfreicher Assistent. Generiere eine sehr kurze und präzise Antwort (max 1-2 Sätze) als direkte Reaktion per Text. Gib NUR die Antwortnachricht zurück, keine Erklärungen und kein JSON. WICHTIG: Antworte IMMER exakt in der Sprache, in der der Nutzer mit dir schreibt. Passe dich nahtlos der Sprache des Nutzers an.</string>
+    <string name="chat_generating">Agent generiert Antwort...</string>
+    <string name="chat_input_hint">Automatisierungs-Befehl eingeben...</string>
+    <string name="sys_active">SYSTEM AKTIV</string>
+    <string name="offline_mode">OFFLINE-MODUS AKTIV</string>
+    <string name="library_title">Lokale Agenten-Bibliothek</string>
+    <string name="library_subtitle">10 Spezialisierte On-Device KI-Erweiterungen</string>
+    <string name="library_active">AKTIV</string>
+    <string name="library_inactive">INAKTIV</string>
+    <string name="library_info">Lade spezialisierte lokale Agenten herunter, um die Fähigkeiten deines Haupt-Agenten zu erweitern. Er wird sie bei komplexen Aufgaben im Hintergrund steuern.</string>
+    <string name="library_ready_download">BEREIT ZUM DOWNLOAD</string>
+    <string name="library_downloading">Lade herunter...</string>
+    <string name="library_install">Lokalen Agenten installieren</string>
+
+    <string name="calendar_title">Titel des Termins</string>
+    <string name="calendar_desc">Beschreibung / Details</string>
+    <string name="calendar_book">Buchen</string>
+    <string name="calendar_cancel">Abbrechen</string>
+
+    <string name="settings_reset_memory">Verlauf &amp; Chats vollständig zurücksetzen</string>
+    <string name="settings_allow">Zulassen</string>
+    <string name="settings_enable">Aktivieren</string>
+    <string name="settings_perm_accessibility">Bedienungshilfen (Accessibility)</string>
+    <string name="settings_perm_accessibility_desc">Agent kann Bildschirm lesen &amp; tippen</string>
+    <string name="settings_perm_notifications">Benachrichtigungs-Zugriff</string>
+    <string name="settings_perm_notifications_desc">Agent kann eingehende Nachrichten lesen</string>
+    <string name="settings_perm_usage">Nutzungsdaten-Zugriff</string>
+    <string name="settings_perm_usage_desc">Agent sieht, welche App offen ist</string>
+    <string name="settings_perm_calendar">Kalenderzugriff erlauben</string>
+
+    <string name="memory_clear_title">Gedächtnis löschen?</string>
+    <string name="memory_clear_desc">Möchtest du wirklich alle gelernten Fakten über dich löschen? Dies kann nicht rückgängig gemacht werden.</string>
+    <string name="memory_clear_confirm">Löschen</string>
+    <string name="memory_cancel">Abbrechen</string>
+    <string name="memory_long_term">Langzeit-Gedächtnis</string>
+
+    <string name="notif_auto_reply_title">KI Auto-Reply aktivieren</string>
+    <string name="notif_auto_reply_desc">KI antwortet sofort auf neue eingehende Benachrichtigungen im Hintergrund.</string>
+    <string name="notif_app_label">App (z.B. WhatsApp)</string>
+    <string name="notif_sender">Absender</string>
+    <string name="notif_message">Nachrichtentext</string>
+    <string name="notif_receive">Empfangen</string>
+    <string name="notif_ai_reply">KI Auto-Reply:</string>
+    <string name="notif_manual_ai_reply">Manuell mit KI antworten</string>
 </resources>

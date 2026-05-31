@@ -18,6 +18,10 @@ import android.content.Context
 import android.app.SearchManager
 import android.os.Handler
 import android.os.Looper
+import android.provider.ContactsContract
+import android.telephony.SmsManager
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 
 object ActionHandler {
 
@@ -35,6 +39,25 @@ object ActionHandler {
             Log.e("ActionHandler", "Failed to execute autonomous action", e)
             showToastOnMainThread(context, "Execution failed: ${e.message}", Toast.LENGTH_SHORT)
         }
+    }
+
+    private fun getPhoneNumber(context: Context, name: String): String? {
+        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            return null
+        }
+        val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
+        val projection = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
+        val selection = "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME} LIKE ?"
+        val selectionArgs = arrayOf("%$name%")
+        context.contentResolver.query(uri, projection, selection, selectionArgs, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val numIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                if (numIndex != -1) {
+                    return cursor.getString(numIndex)
+                }
+            }
+        }
+        return null
     }
 
     suspend fun handleCalendarAction(context: Application, json: JSONObject): Boolean {
@@ -198,10 +221,35 @@ object ActionHandler {
                 "contacts" to "com.android.contacts",
                 "calendar" to "com.google.android.calendar",
                 "files" to "com.google.android.apps.nbu.files",
-                "notes" to "com.google.android.keep"
+                "notes" to "com.google.android.keep",
+                "sms" to "sms_internal",
+                "nachrichten" to "sms_internal",
+                "messages" to "sms_internal"
             )
 
             val targetPackage = packageMap[sysApp.lowercase().trim()]
+            
+            if (targetPackage == "sms_internal" && finalInstruction.isNotEmpty()) {
+                val phone = if (sysRecipient.isNotEmpty()) getPhoneNumber(context, sysRecipient) else null
+                if (phone != null && ContextCompat.checkSelfPermission(context, android.Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+                    try {
+                        val smsManager = context.getSystemService(SmsManager::class.java)
+                        smsManager.sendTextMessage(phone, null, finalInstruction, null, null)
+                        showToastOnMainThread(context, "SMS an $sysRecipient gesendet", Toast.LENGTH_LONG)
+                        return true
+                    } catch (e: Exception) {
+                        showToastOnMainThread(context, "SMS Fehler: ${e.message}", Toast.LENGTH_SHORT)
+                    }
+                } else if (phone != null) {
+                    val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$phone")).apply {
+                        putExtra("sms_body", finalInstruction)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    executeDirectly(context, intent, "SMS an $sysRecipient senden?")
+                    return true
+                }
+                return false
+            }
 
             if (targetPackage != null) {
                 try {
@@ -212,13 +260,27 @@ object ActionHandler {
                     )
 
                     if (targetPackage in messagingApps && finalInstruction.isNotEmpty()) {
-                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                            setType("text/plain")
-                            setPackage(targetPackage)
-                            putExtra(Intent.EXTRA_TEXT, finalInstruction)
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        val phone = if (sysRecipient.isNotEmpty()) getPhoneNumber(context, sysRecipient) else null
+                        val shareIntent = if (targetPackage == "com.whatsapp" && phone != null) {
+                            Intent(Intent.ACTION_VIEW).apply {
+                                data = Uri.parse("https://api.whatsapp.com/send?phone=$phone&text=${Uri.encode(finalInstruction)}")
+                                setPackage(targetPackage)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                        } else {
+                            Intent(Intent.ACTION_SEND).apply {
+                                setType("text/plain")
+                                setPackage(targetPackage)
+                                putExtra(Intent.EXTRA_TEXT, finalInstruction)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
                         }
                         try {
+                            AgentAccessibilityService.AutomationState.isRunning = true
+                            AgentAccessibilityService.AutomationState.targetApp = targetPackage
+                            AgentAccessibilityService.AutomationState.recipient = sysRecipient
+                            AgentAccessibilityService.AutomationState.step = if (targetPackage == "com.whatsapp" && phone != null) 3 else 1
+
                             val msg = "Nachricht via \$sysApp senden?"
                             executeDirectly(context, shareIntent, msg, targetPackage, sysRecipient)
                             return true

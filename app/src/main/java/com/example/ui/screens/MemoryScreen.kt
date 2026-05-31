@@ -30,19 +30,19 @@ fun MemoryScreen(viewModel: AgentViewModel, onBack: () -> Unit) {
     if (showClearConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showClearConfirmDialog = false },
-            title = { Text("Gedächtnis löschen?") },
-            text = { Text("Möchtest du wirklich alle gelernten Fakten über dich löschen? Dies kann nicht rückgängig gemacht werden.") },
+            title = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.memory_clear_title)) },
+            text = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.memory_clear_desc)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.clearAllMemories()
                     showClearConfirmDialog = false
                 }) {
-                    Text("Löschen", color = MaterialTheme.colorScheme.error)
+                    Text(androidx.compose.ui.res.stringResource(com.example.R.string.memory_clear_confirm), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearConfirmDialog = false }) {
-                    Text("Abbrechen")
+                    Text(androidx.compose.ui.res.stringResource(com.example.R.string.memory_cancel))
                 }
             }
         )
@@ -51,7 +51,7 @@ fun MemoryScreen(viewModel: AgentViewModel, onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Langzeit-Gedächtnis") },
+                title = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.memory_long_term)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Zurück")
