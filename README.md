@@ -12,7 +12,7 @@
 
 <br>
 
-[![Download APK](https://img.shields.io/badge/Download-Latest_APK_V14-FF4500?style=for-the-badge&logo=android&logoColor=white)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/V14.apk)
+[![Download APK](https://img.shields.io/badge/Download-Latest_APK_V15-FF4500?style=for-the-badge&logo=android&logoColor=white)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/V15.apk)
 
 </div>
 
