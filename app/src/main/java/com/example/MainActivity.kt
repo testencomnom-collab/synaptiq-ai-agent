@@ -26,8 +26,10 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 
+import androidx.appcompat.app.AppCompatActivity
+
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private lateinit var permissionsManager: PermissionsManager
     private val crashError = mutableStateOf<String?>(null)
 

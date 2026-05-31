@@ -64,6 +64,10 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.ui.res.stringResource
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import com.example.R
 
 @Composable
 fun AnimatedLiquidBackground(modifier: Modifier = Modifier) {
@@ -136,31 +140,31 @@ fun MainAgentView(
                         selected = currentTab == "chat",
                         onClick = { currentTab = "chat" },
                         icon = { Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Chat") },
-                        label = { Text("Agent") }
+                        label = { Text(stringResource(R.string.nav_chat)) }
                     )
                     NavigationRailItem(
                         selected = currentTab == "notifications",
                         onClick = { currentTab = "notifications" },
                         icon = { Icon(Icons.Default.Notifications, contentDescription = "Notifications") },
-                        label = { Text("Benachrichtigungen") }
+                        label = { Text(stringResource(R.string.nav_notifications)) }
                     )
                     NavigationRailItem(
                         selected = currentTab == "calendar",
                         onClick = { currentTab = "calendar" },
                         icon = { Icon(Icons.Default.CalendarMonth, contentDescription = "Calendar") },
-                        label = { Text("Schedule") }
+                        label = { Text(stringResource(R.string.nav_calendar)) }
                     )
                     NavigationRailItem(
                         selected = currentTab == "library",
                         onClick = { currentTab = "library" },
                         icon = { Icon(Icons.Default.Dashboard, contentDescription = "Library") },
-                        label = { Text("Library") }
+                        label = { Text(stringResource(R.string.nav_library)) }
                     )
                     NavigationRailItem(
                         selected = currentTab == "settings",
                         onClick = { currentTab = "settings" },
                         icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                        label = { Text("Settings") }
+                        label = { Text(stringResource(R.string.nav_settings)) }
                     )
                 }
             }
@@ -178,31 +182,31 @@ fun MainAgentView(
                                 selected = currentTab == "chat",
                                 onClick = { currentTab = "chat" },
                                 icon = { Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Chat") },
-                                label = { Text("Agent") }
+                                label = { Text(stringResource(R.string.nav_chat)) }
                             )
                             NavigationBarItem(
                                 selected = currentTab == "notifications",
                                 onClick = { currentTab = "notifications" },
                                 icon = { Icon(Icons.Default.Notifications, contentDescription = "Notifications") },
-                                label = { Text("Benachrichtigungen") }
+                                label = { Text(stringResource(R.string.nav_notifications)) }
                             )
                             NavigationBarItem(
                                 selected = currentTab == "calendar",
                                 onClick = { currentTab = "calendar" },
                                 icon = { Icon(Icons.Default.CalendarMonth, contentDescription = "Calendar") },
-                                label = { Text("Schedule") }
+                                label = { Text(stringResource(R.string.nav_calendar)) }
                             )
                             NavigationBarItem(
                                 selected = currentTab == "library",
                                 onClick = { currentTab = "library" },
                                 icon = { Icon(Icons.Default.Dashboard, contentDescription = "Library") },
-                                label = { Text("Library") }
+                                label = { Text(stringResource(R.string.nav_library)) }
                             )
                             NavigationBarItem(
                                 selected = currentTab == "settings",
                                 onClick = { currentTab = "settings" },
                                 icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                                label = { Text("Settings") }
+                                label = { Text(stringResource(R.string.nav_settings)) }
                             )
                         }
                     }
@@ -1524,7 +1528,7 @@ fun AgentSettingsTab(
         item {
             Column(modifier = Modifier.padding(bottom = 4.dp)) {
                 Text(
-                    "System-Konfigurationen",
+                    stringResource(R.string.settings_title),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -1537,6 +1541,61 @@ fun AgentSettingsTab(
                     lineHeight = 18.sp,
                     modifier = Modifier.padding(top = 4.dp)
                 )
+            }
+        }
+
+        // --- App UI Language Configuration ---
+        item {
+            var showAppLangMenu by remember { mutableStateOf(false) }
+            val currentAppLang = AppCompatDelegate.getApplicationLocales().toLanguageTags().let { 
+                if (it.contains("de", ignoreCase = true)) "Deutsch" 
+                else if (it.contains("es", ignoreCase = true)) "Español"
+                else "English"
+            }
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        stringResource(R.string.settings_language),
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Box {
+                        OutlinedButton(
+                            onClick = { showAppLangMenu = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("UI: \$currentAppLang")
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select UI Language")
+                            }
+                        }
+                        DropdownMenu(
+                            expanded = showAppLangMenu,
+                            onDismissRequest = { showAppLangMenu = false }
+                        ) {
+                            listOf("English" to "en", "Deutsch" to "de", "Español" to "es").forEach { (langName, tag) ->
+                                DropdownMenuItem(
+                                    text = { Text(langName) },
+                                    onClick = {
+                                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
+                                        showAppLangMenu = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 

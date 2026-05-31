@@ -8,11 +8,14 @@ import kotlinx.coroutines.flow.Flow
 
 import com.example.data.database.AgentConfigDao
 import com.example.data.model.AgentConfigEntity
+import com.example.data.database.MemoryDao
+import com.example.data.model.MemoryEntity
 
 class AgentRepository(
     private val chatDao: ChatDao,
     private val notificationDao: NotificationDao,
-    private val agentConfigDao: AgentConfigDao
+    private val agentConfigDao: AgentConfigDao,
+    private val memoryDao: MemoryDao
 ) {
     val allNotifications: Flow<List<NotificationItem>> = notificationDao.getAllNotifications()
 
@@ -54,5 +57,13 @@ class AgentRepository(
 
     suspend fun clearNotifications() {
         notificationDao.deleteAll()
+    }
+
+    suspend fun getAllMemories(): List<MemoryEntity> {
+        return memoryDao.getAllMemories()
+    }
+
+    suspend fun insertMemory(memory: MemoryEntity) {
+        memoryDao.insertMemory(memory)
     }
 }

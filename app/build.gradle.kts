@@ -43,8 +43,8 @@ android {
     release {
       isDebuggable = false
       isCrunchPngs = true
-      isMinifyEnabled = true
-      isShrinkResources = true
+      isMinifyEnabled = false
+      isShrinkResources = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
@@ -83,6 +83,7 @@ dependencies {
   implementation(libs.androidx.compose.material.icons.core)
   implementation(libs.androidx.compose.material.icons.extended)
   implementation(libs.androidx.compose.material3)
+  implementation("androidx.appcompat:appcompat:1.6.1")
   implementation("androidx.compose.material3:material3-window-size-class")
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.graphics)

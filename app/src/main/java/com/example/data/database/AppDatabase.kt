@@ -7,12 +7,14 @@ import androidx.room.RoomDatabase
 import com.example.data.model.ChatMessage
 import com.example.data.model.NotificationItem
 import com.example.data.model.AgentConfigEntity
+import com.example.data.model.MemoryEntity
 
-@Database(entities = [ChatMessage::class, NotificationItem::class, AgentConfigEntity::class], version = 3, exportSchema = false)
+@Database(entities = [ChatMessage::class, NotificationItem::class, AgentConfigEntity::class, MemoryEntity::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chatDao(): ChatDao
     abstract fun notificationDao(): NotificationDao
     abstract fun agentConfigDao(): AgentConfigDao
+    abstract fun memoryDao(): MemoryDao
 
     companion object {
         @Volatile

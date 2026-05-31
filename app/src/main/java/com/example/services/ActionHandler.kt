@@ -19,15 +19,14 @@ import android.app.SearchManager
 
 object ActionHandler {
 
-    private fun requireConfirmation(context: Context, targetIntent: Intent, message: String, targetApp: String? = null, targetRecipient: String? = null) {
-        val confirmIntent = Intent(context, com.example.ui.ConfirmationActivity::class.java).apply {
-            putExtra("TARGET_INTENT", targetIntent)
-            putExtra("CONFIRM_MESSAGE", message)
-            putExtra("TARGET_APP", targetApp)
-            putExtra("TARGET_RECIPIENT", targetRecipient)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    private fun executeDirectly(context: Context, targetIntent: Intent, message: String, targetApp: String? = null, targetRecipient: String? = null) {
+        try {
+            targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(targetIntent)
+        } catch (e: Exception) {
+            Log.e("ActionHandler", "Failed to execute autonomous action", e)
+            Toast.makeText(context, "Execution failed: \${e.message}", Toast.LENGTH_SHORT).show()
         }
-        context.startActivity(confirmIntent)
     }
 
     suspend fun handleCalendarAction(context: Application, json: JSONObject): Boolean {
@@ -80,7 +79,7 @@ object ActionHandler {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             Toast.makeText(context, "Opening email composer draft...", Toast.LENGTH_SHORT).show()
-            requireConfirmation(context, emailIntent, "E-Mail an \$rec vorbereiten?")
+            executeDirectly(context, emailIntent, "E-Mail an \$rec vorbereiten?")
             return true
         }
         return false
@@ -119,7 +118,7 @@ object ActionHandler {
                         putExtra(AlarmClock.EXTRA_MESSAGE, sysRecipient.ifEmpty { "AI Alarm" })
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                    requireConfirmation(context, intent, "Wecker für \$hour:\$minute stellen?")
+                    executeDirectly(context, intent, "Wecker für \$hour:\$minute stellen?")
                     return true
                 }
             }
@@ -131,7 +130,7 @@ object ActionHandler {
                     putExtra(AlarmClock.EXTRA_SKIP_UI, false)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                requireConfirmation(context, intent, "Timer für \$minutes Minuten stellen?")
+                executeDirectly(context, intent, "Timer für \$minutes Minuten stellen?")
                 return true
             }
             "spotify" -> {
@@ -142,14 +141,14 @@ object ActionHandler {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 return try {
-                    requireConfirmation(context, intent, "Spotify Suche nach: \$finalInstruction durchführen?")
+                    executeDirectly(context, intent, "Spotify Suche nach: \$finalInstruction durchführen?")
                     true
                 } catch (e: Exception) {
                     // Fallback to opening app
                     val launchIntent = context.packageManager.getLaunchIntentForPackage("com.spotify.music")
                     if (launchIntent != null) {
                         launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        requireConfirmation(context, launchIntent, "Spotify öffnen?")
+                        executeDirectly(context, launchIntent, "Spotify öffnen?")
                         true
                     } else false
                 }
@@ -159,7 +158,7 @@ object ActionHandler {
                     putExtra(SearchManager.QUERY, finalInstruction)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                requireConfirmation(context, intent, "Im Web nach '\$finalInstruction' suchen?")
+                executeDirectly(context, intent, "Im Web nach '\$finalInstruction' suchen?")
                 return true
             }
         }
@@ -213,13 +212,13 @@ object ActionHandler {
                         }
                         try {
                             val msg = "Nachricht via \$sysApp senden?"
-                            requireConfirmation(context, shareIntent, msg, targetPackage, sysRecipient)
+                            executeDirectly(context, shareIntent, msg, targetPackage, sysRecipient)
                             return true
                         } catch (e: Exception) {
                             val launchIntent = pm.getLaunchIntentForPackage(targetPackage)
                             if (launchIntent != null) {
                                 launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                requireConfirmation(context, launchIntent, "\$sysApp öffnen?")
+                                executeDirectly(context, launchIntent, "\$sysApp öffnen?")
                                 return true
                             }
                         }
@@ -227,7 +226,7 @@ object ActionHandler {
                         val launchIntent = pm.getLaunchIntentForPackage(targetPackage)
                         if (launchIntent != null) {
                             launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            requireConfirmation(context, launchIntent, "\$sysApp öffnen?")
+                            executeDirectly(context, launchIntent, "\$sysApp öffnen?")
                             return true
                         } else {
                             Toast.makeText(context, "\$sysApp is not installed on this device.", Toast.LENGTH_LONG).show()
@@ -246,7 +245,7 @@ object ActionHandler {
                     val launchIntent = pm.getLaunchIntentForPackage(match.packageName)
                     if (launchIntent != null) {
                         launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        requireConfirmation(context, launchIntent, "\$sysApp öffnen?")
+                        executeDirectly(context, launchIntent, "\$sysApp öffnen?")
                         return true
                     }
                 } else {

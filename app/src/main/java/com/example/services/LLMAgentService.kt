@@ -153,6 +153,17 @@ class LLMAgentService(
             }
         }
 
+        // Fetch Memory Facts
+        val memories = repository.getAllMemories()
+        val memoryDetails = java.lang.StringBuilder()
+        if (memories.isEmpty()) {
+            memoryDetails.append("No known facts yet.\n")
+        } else {
+            memories.forEach { mem ->
+                memoryDetails.append("- ${mem.factText}\n")
+            }
+        }
+
         // 2. Gather Notifications context
         val inboxDetails = StringBuilder()
         if (notificationsContext.isEmpty()) {
@@ -208,6 +219,10 @@ class LLMAgentService(
             
             Current Date & Time context of the user: $currentDateTimeStr
             
+            --- KNOWN FACTS ABOUT THE USER ---
+            $memoryDetails
+            -----------------------------------------
+            
             --- USER'S ACTIVE ON-DEVICE CALENDAR SCHEDULE (Next 7 days) ---
             $calendarDetails
             ----------------------------------------------------------------
@@ -234,6 +249,7 @@ class LLMAgentService(
             - If they ask to play a song/artist/playlist on Spotify, use "SYSTEM_ACTION" with "targetApp": "spotify" and "instruction": "Song/Artist name".
             - If they ask to search the web or google something, use "SYSTEM_ACTION" with "targetApp": "search" and "instruction": "Search query".
             - If they ask to open any app, use "SYSTEM_ACTION" with the app name in "targetApp" and leave "instruction" and "recipient" empty.
+            - If the user explicitly or implicitly states a new fact about themselves (e.g., name, job, preferences, favorites), extract it and add it to the "newFactsLearned" JSON array. Keep the facts concise, e.g., "User's favorite food is pizza".
             
             You MUST return your entire output as a strictly valid, parsable JSON object. Do not include any markdown backticks, explanations outside the JSON, or leading/trailing text. The JSON structure MUST be:
             {
@@ -256,7 +272,8 @@ class LLMAgentService(
                   "targetApp": "App name ('Snapchat', 'WhatsApp', 'Instagram', 'Telegram', 'Discord', 'YouTube', 'Chrome', 'Settings', 'Camera', 'TikTok', 'Spotify', 'flashlight', 'alarm', 'timer', 'search')",
                   "recipient": "The name of the friend/contact, or empty string if not applicable",
                   "instruction": "The actual message text to send, or the command (e.g. 'on', '5', '10:00'), or empty string if just opening the app"
-               }
+               },
+               "newFactsLearned": ["Fact 1", "Fact 2"] 
             }
             
             Ensure calendar times are calculated correctly based on the current date: $currentDateTimeStr. 
@@ -386,6 +403,16 @@ class LLMAgentService(
             sysApp = sysObj.optString("targetApp")
             sysRecipient = sysObj.optString("recipient")
             sysInstruction = sysObj.optString("instruction")
+        }
+
+        val newFactsArr = json.optJSONArray("newFactsLearned")
+        if (newFactsArr != null) {
+            for (i in 0 until newFactsArr.length()) {
+                val fact = newFactsArr.optString(i)
+                if (fact.isNotBlank()) {
+                    repository.insertMemory(com.example.data.model.MemoryEntity(factText = fact))
+                }
+            }
         }
 
         return AgentProposal(

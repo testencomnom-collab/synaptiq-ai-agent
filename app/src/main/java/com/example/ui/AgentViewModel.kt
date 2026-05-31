@@ -17,6 +17,7 @@ import com.example.services.ActionHandler
 import com.example.services.AgentAccessibilityService
 import com.example.services.CalendarManager
 import com.example.services.LLMAgentService
+import com.example.services.AgentEngineManager
 import android.speech.tts.TextToSpeech
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,18 +38,15 @@ import java.util.Locale
 class AgentViewModel(application: Application) : AndroidViewModel(application), TextToSpeech.OnInitListener {
 
     private val db = AppDatabase.getDatabase(application)
-    private val repository = AgentRepository(db.chatDao(), db.notificationDao(), db.agentConfigDao())
+    private val repository = AgentRepository(db.chatDao(), db.notificationDao(), db.agentConfigDao(), db.memoryDao())
     val preferencesManager = PreferencesManager(application)
     
-    private var agentService: LLMAgentService? = null
+    private val agentService: LLMAgentService
+        get() = AgentEngineManager.getService(getApplication(), preferencesManager, repository)
+
     private var tts: TextToSpeech? = null
 
     init {
-        try {
-            agentService = LLMAgentService(application, preferencesManager, repository)
-        } catch (e: Throwable) {
-            Log.e("AgentViewModel", "Could not initialize LLMAgentService: ${e.message}", e)
-        }
         if (preferencesManager.isTtsEnabled) {
             initTts()
         }
@@ -260,7 +258,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
     fun sendMessage(query: String) {
         if (query.trim().isEmpty() || isLoading.value) return
 
-        viewModelScope.launch {
+        AgentEngineManager.engineScope.launch {
             isLoading.value = true
             // Save user message to database
             val userMsg = ChatMessage(agentId = activeChatAgentId.value, role = "user", message = query)
@@ -270,7 +268,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
             val currentNotifications = notifications.value
 
             // Call Agent Service
-            val svc = agentService ?: throw Exception("LLM Agent Service is not available due to initialization fatal error.")
+            val svc = agentService
             val proposal = svc.executeAgentQuery(activeChatAgentId.value, query, currentNotifications)
 
             // Build action data payload if applicable
@@ -379,7 +377,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
     }
 
     fun addNotification(appName: String, sender: String, message: String) {
-        viewModelScope.launch {
+        AgentEngineManager.engineScope.launch {
             val notification = NotificationItem(appName = appName, sender = sender, message = message)
             val id = repository.insertNotification(notification).toInt()
             statusMessage.value = "New notification added from $sender."
@@ -387,8 +385,8 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
             if (isAutoReplyEnabled.value) {
                 // Auto-reply logic
                 try {
-                    val svc = agentService ?: return@launch
-                    val prompt = "Der Nutzer hat folgende Benachrichtigung von $sender (App: $appName) erhalten:\n\"$message\"\nBitte schreibe eine kurze, direkte und passende Antwortnachricht auf diese Benachrichtigung im Namen des Nutzers."
+            val svc = agentService
+            val prompt = "Der Nutzer hat folgende Benachrichtigung von $sender (App: $appName) erhalten:\n\"$message\"\nBitte schreibe eine kurze, direkte und passende Antwortnachricht auf diese Benachrichtigung im Namen des Nutzers."
                     val replyText = svc.generateDirectReply(activeChatAgentId.value, prompt)
                     repository.updateNotificationReply(id, replyText)
                     statusMessage.value = "AI replied to $sender automatically."
@@ -420,7 +418,6 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
 
     override fun onCleared() {
         super.onCleared()
-        agentService?.close()
         tts?.stop()
         tts?.shutdown()
     }

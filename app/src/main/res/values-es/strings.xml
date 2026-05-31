@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">OnDeviceAgent</string>
+    <string name="accessibility_service_description">Permite que el Agente de IA lea el contenido de la pantalla e interactúe con otras aplicaciones.</string>
+    <string name="nav_chat">Agente</string>
+    <string name="nav_notifications">Notificaciones</string>
+    <string name="nav_calendar">Horario</string>
+    <string name="nav_library">Biblioteca</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_permissions">Permisos</string>
+</resources>
