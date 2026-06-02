@@ -1,4 +1,6 @@
 ### What's new
-- **Bulletproof JSON Parser**: Mathematically guarantees accurate JSON extraction from LLM responses even if hallucinations or conversational filler are present. Prevents background crashes.
-- **3-Layer Ghost Hand Automation**: Upgraded the accessibility service to feature three fallback layers for robust UI automation: Standard Actions, Clipboard Injection, and Hardware-level Tapping.
-- **Zero Bug Guarantee**: Deep codebase audit of `ContinuousAgentService`, `ActionHandler`, and `LLMAgentService` to ensure a completely bug-free runtime loop.
+- **Auto-Scroll Navigation**: The agent can now automatically scroll through apps and menus using SCROLL_DOWN and SCROLL_UP.
+- **Memory Leak Fixed**: The AgentAccessibilityService correctly releases accessibility nodes after reading them.
+- **15-Second Timeout Fix**: The UI action loop now has a timeout.
+- **Improved Network Stability**: Connection drops no longer hard-crash the task.
+- **Code & UI Cleanup**: Obsolete UI elements and dead code have been cleaned up.
