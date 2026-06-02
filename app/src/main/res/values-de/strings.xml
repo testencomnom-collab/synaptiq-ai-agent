@@ -55,4 +55,14 @@
     <string name="notif_receive">Empfangen</string>
     <string name="notif_ai_reply">KI Auto-Reply:</string>
     <string name="notif_manual_ai_reply">Manuell mit KI antworten</string>
+
+    <string name="agent_starts">Agent startet...</string>
+    <string name="agent_working">Agent arbeitet: Schritt %1$d...</string>
+    <string name="task_completed">Aufgabe abgeschlossen!</string>
+    <string name="agent_stopped">Agent manuell gestoppt.</string>
+    <string name="agent_thinking">Schritt %1$d - Denkt nach:\n%2$s</string>
+    <string name="agent_inactive">Agent inaktiv.</string>
+    <string name="select_model_title">Modell auswählen</string>
+    <string name="select_model_hint">Wähle ein Modell...</string>
+    <string name="manual_model_hint">Manuelles Modell (leer lassen für Standard)</string>
 </resources>

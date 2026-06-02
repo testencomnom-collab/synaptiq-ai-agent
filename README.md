@@ -12,7 +12,7 @@
 
 <br>
 
-[![Download APK](https://img.shields.io/badge/Download-Latest_APK_V18-FF4500?style=for-the-badge&logo=android&logoColor=white)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/synaptiq-ai-agent-V18-Autonomous.apk)
+[![Download APK](https://img.shields.io/badge/Download-Latest_APK_V18_Bug_Fixes-FF4500?style=for-the-badge&logo=android&logoColor=white)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/synaptiq-ai-agent-V18-Bug-Fixes.apk)
 
 </div>
 

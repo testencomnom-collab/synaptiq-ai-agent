@@ -214,7 +214,7 @@ class LLMAgentService(
             - Reading App Usage Stats, Camera, Microphone, Location, Contacts, SMS, and Accounts.
             
             Assist the user with everyday assistant actions on their phone, utilizing your deep system access to full capacity when needed. For example, if they ask about messages, assume you can read them.
-            You must ALWAYS reply in the exact same language that the user is currently using in their query. Adapt seamlessly to the user's language.
+            IMPORTANT: You MUST communicate, think, and generate your answers strictly in the following language: [$agentLang].
             
             Current Date & Time context of the user: $currentDateTimeStr
             

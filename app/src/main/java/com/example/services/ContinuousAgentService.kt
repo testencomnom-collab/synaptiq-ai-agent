@@ -11,6 +11,7 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.R
 import kotlinx.coroutines.*
 
 class ContinuousAgentService : Service() {
@@ -26,12 +27,13 @@ class ContinuousAgentService : Service() {
         const val NOTIFICATION_ID = 1001
         
         val isRunning = kotlinx.coroutines.flow.MutableStateFlow(false)
+        val currentThought = kotlinx.coroutines.flow.MutableStateFlow("")
     }
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification("Agent startet..."))
+        startForeground(NOTIFICATION_ID, createNotification(getString(R.string.agent_starts)))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -39,7 +41,7 @@ class ContinuousAgentService : Service() {
             serviceJob.cancelChildren()
             releaseWakeLock()
             isRunning.value = false
-            updateNotification("Agent manuell gestoppt.")
+            updateNotification(getString(R.string.agent_stopped))
             stopSelf()
             return START_NOT_STICKY
         }
@@ -77,7 +79,7 @@ class ContinuousAgentService : Service() {
 
         while (!isTaskFinished && stepCount < maxSteps && isActive) {
             stepCount++
-            updateNotification("Agent arbeitet: Schritt $stepCount...")
+            updateNotification(getString(R.string.agent_working, stepCount))
 
             try {
                 val recentHistory = actionHistory.takeLast(5).joinToString("\n")
@@ -89,12 +91,17 @@ class ContinuousAgentService : Service() {
                     notificationsContext = emptyList() 
                 )
                 
+                // Zeige den Gedanken des Agenten in der Benachrichtigung an
+                updateNotification(getString(R.string.agent_thinking, stepCount, proposal.thought))
+                currentThought.value = proposal.thought ?: ""
+                delay(1000) // Kurze Pause, damit der User den Gedanken lesen kann
+                
                 var currentStepRecord = "Step $stepCount - Thought: ${proposal.thought} | Action: ${proposal.actionType}"
 
                 when (proposal.actionType) {
                     "FINISH" -> {
                         isTaskFinished = true
-                        updateNotification("Aufgabe abgeschlossen!")
+                        updateNotification(getString(R.string.task_completed))
                     }
                     "SYSTEM_ACTION" -> {
                         AgentAccessibilityService.AutomationState.targetApp = proposal.systemActionApp ?: ""
@@ -125,7 +132,7 @@ class ContinuousAgentService : Service() {
             }
         }
         
-        updateNotification("Agent inaktiv.")
+        updateNotification(getString(R.string.agent_inactive))
         stopSelf()
     }
 

@@ -32,7 +32,7 @@ class PreferencesManager(context: Context) {
     }
 
     var agentLanguage: String
-        get() = prefs.getString(KEY_AGENT_LANGUAGE, "Deutsch") ?: "Deutsch"
+        get() = prefs.getString(KEY_AGENT_LANGUAGE, "English") ?: "English"
         set(value) = prefs.edit { putString(KEY_AGENT_LANGUAGE, value) }
 
     var isTtsEnabled: Boolean

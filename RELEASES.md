@@ -11,7 +11,7 @@
 - **Optimiertes Kurzzeitgedächtnis**: Der Agent trackt die letzten 5 Aktionen als History-Kontext, was Token-Limits schont und Endlosschleifen vorbeugt.
 
 ### Download
-The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-V18-Autonomous.apk](releases/synaptiq-ai-agent-V18-Autonomous.apk)
+The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-V18-Bug-Fixes.apk](releases/synaptiq-ai-agent-V18-Bug-Fixes.apk)
 
 
 ## v1.0.0 — On-Device Agent

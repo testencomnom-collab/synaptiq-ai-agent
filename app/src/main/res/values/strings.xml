@@ -55,4 +55,14 @@
     <string name="notif_receive">Receive</string>
     <string name="notif_ai_reply">AI Auto-Reply:</string>
     <string name="notif_manual_ai_reply">Reply manually with AI</string>
+
+    <string name="agent_starts">Agent starts...</string>
+    <string name="agent_working">Agent is working: Step %1$d...</string>
+    <string name="task_completed">Task completed!</string>
+    <string name="agent_stopped">Agent manually stopped.</string>
+    <string name="agent_thinking">Step %1$d - Thinking:\n%2$s</string>
+    <string name="agent_inactive">Agent inactive.</string>
+    <string name="select_model_title">Select Model</string>
+    <string name="select_model_hint">Choose a model...</string>
+    <string name="manual_model_hint">Manual Model (leave empty for default)</string>
 </resources>

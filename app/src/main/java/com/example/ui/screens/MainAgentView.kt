@@ -1908,26 +1908,56 @@ fun AgentSettingsTab(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Config Key Custom Model
+                    // Config Key Custom Model (Dropdown)
                     Column {
                         Text(
-                            "Manuelles Modell (leer lassen für Standard)", 
+                            stringResource(R.string.select_model_title), 
                             fontWeight = FontWeight.Bold, 
                             fontSize = 11.sp, 
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(bottom = 4.dp, start = 2.dp)
                         )
-                        OutlinedTextField(
-                            value = customModelText,
-                            onValueChange = {
-                                customModelText = it
-                                viewModel.updateModel(it)
-                            },
-                            placeholder = { Text(viewModel.preferencesManager.getActiveModel()) },
-                            modifier = Modifier.fillMaxWidth(),
-                            maxLines = 1,
-                            shape = RoundedCornerShape(12.dp)
-                        )
+                        
+                        var showModelMenu by remember { mutableStateOf(false) }
+                        
+                        // Dynamische Modell-Listen basierend auf dem aktiven Provider
+                        val availableModels = when (activeProvider) {
+                            "GEMINI" -> listOf("gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-3.5-flash", "gemini-3.1-pro")
+                            "OPENAI" -> listOf("gpt-4o", "gpt-4o-mini", "o1", "o1-mini", "o3-mini")
+                            "ANTHROPIC" -> listOf("claude-3-7-sonnet-latest", "claude-3-5-sonnet-latest", "claude-3-5-haiku-latest", "claude-3-opus-latest")
+                            else -> listOf()
+                        }
+
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedButton(
+                                onClick = { showModelMenu = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = model.ifEmpty { stringResource(R.string.select_model_hint) }, 
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.select_model_title), tint = MaterialTheme.colorScheme.onSurface)
+                            }
+                            DropdownMenu(
+                                expanded = showModelMenu,
+                                onDismissRequest = { showModelMenu = false },
+                                modifier = Modifier.fillMaxWidth(0.85f)
+                            ) {
+                                availableModels.forEach { modelName ->
+                                    DropdownMenuItem(
+                                        text = { Text(modelName) },
+                                        onClick = {
+                                            viewModel.updateModel(modelName)
+                                            showModelMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
