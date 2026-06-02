@@ -8,5 +8,61 @@
     <string name="nav_settings">Ajustes</string>
     <string name="settings_title">Ajustes</string>
     <string name="settings_language">Idioma</string>
+    <string name="settings_language_desc">Elige la interfaz de la aplicación preferida y el idioma de respuesta del Agente de IA:</string>
     <string name="settings_permissions">Permisos</string>
+    <string name="llm_system_prompt_local">Eres un asistente de IA local inteligente. Responde siempre de manera útil y amistosa. IMPORTANTE: DEBES responder SIEMPRE exactamente en el mismo idioma que el usuario está utilizando en su consulta. Adáptate sin problemas al idioma del usuario.</string>
+    <string name="llm_system_prompt_direct_reply">Eres un asistente útil. Genera una respuesta de texto muy breve y precisa (máx. 1-2 oraciones). Devuelve ÚNICAMENTE el texto del mensaje, sin explicaciones y sin JSON. IMPORTANTE: DEBES responder SIEMPRE exactamente en el mismo idioma que el usuario está utilizando en su consulta. Adáptate sin problemas al idioma del usuario.</string>
+    <string name="chat_generating">El agente está generando una respuesta...</string>
+    <string name="chat_input_hint">Introduzca el comando de automatización...</string>
+    <string name="sys_active">SISTEMA ACTIVO</string>
+    <string name="offline_mode">MODO SIN CONEXIÓN ACTIVO</string>
+    <string name="library_title">Biblioteca de agentes locales</string>
+    <string name="library_subtitle">10 extensiones especializadas de IA en el dispositivo</string>
+    <string name="library_active">ACTIVO</string>
+    <string name="library_inactive">INACTIVO</string>
+    <string name="library_info">Descarga agentes locales especializados para ampliar las capacidades de tu agente principal. Los controlará en segundo plano para tareas complejas.</string>
+    <string name="library_ready_download">LISTO PARA DESCARGAR</string>
+    <string name="library_downloading">Descargando...</string>
+    <string name="library_install">Instalar agente local</string>
+    
+    <string name="calendar_title">Título del evento</string>
+    <string name="calendar_desc">Descripción / Detalles</string>
+    <string name="calendar_book">Reservar evento</string>
+    <string name="calendar_cancel">Cancelar</string>
+    
+    <string name="settings_reset_memory">Restablecer historial y memoria completa</string>
+    <string name="settings_allow">Permitir</string>
+    <string name="settings_enable">Habilitar</string>
+    <string name="settings_perm_accessibility">Servicios de accesibilidad</string>
+    <string name="settings_perm_accessibility_desc">El agente puede leer la pantalla y tocar</string>
+    <string name="settings_perm_notifications">Acceso a notificaciones</string>
+    <string name="settings_perm_notifications_desc">El agente puede leer los mensajes entrantes</string>
+    <string name="settings_perm_usage">Acceso a datos de uso</string>
+    <string name="settings_perm_usage_desc">El agente puede ver qué aplicación está activa</string>
+    <string name="settings_perm_calendar">Permitir acceso al calendario</string>
+    
+    <string name="memory_clear_title">¿Eliminar memoria?</string>
+    <string name="memory_clear_desc">¿Realmente quieres borrar todos los hechos aprendidos sobre ti? Esto no se puede deshacer.</string>
+    <string name="memory_clear_confirm">Eliminar</string>
+    <string name="memory_cancel">Cancelar</string>
+    <string name="memory_long_term">Memoria a largo plazo</string>
+    
+    <string name="notif_auto_reply_title">Habilitar respuesta automática de IA</string>
+    <string name="notif_auto_reply_desc">La IA responderá de inmediato a las nuevas notificaciones entrantes en segundo plano.</string>
+    <string name="notif_app_label">Aplicación (ej. WhatsApp)</string>
+    <string name="notif_sender">Remitente</string>
+    <string name="notif_message">Texto del mensaje</string>
+    <string name="notif_receive">Recibir</string>
+    <string name="notif_ai_reply">Respuesta automática de IA:</string>
+    <string name="notif_manual_ai_reply">Responder manualmente con IA</string>
+
+    <string name="agent_starts">El agente comienza...</string>
+    <string name="agent_working">El agente está trabajando: Paso %1$d...</string>
+    <string name="task_completed">¡Tarea completada!</string>
+    <string name="agent_stopped">Agente detenido manualmente.</string>
+    <string name="agent_thinking">Paso %1$d - Pensando:\n%2$s</string>
+    <string name="agent_inactive">Agente inactivo.</string>
+    <string name="select_model_title">Seleccionar modelo</string>
+    <string name="select_model_hint">Elige un modelo...</string>
+    <string name="manual_model_hint">Modelo manual (dejar vacío para el predeterminado)</string>
 </resources>
