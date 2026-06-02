@@ -1,5 +1,18 @@
 # Release Notes
 
+## v18.5 — 3-Layer Ghost Hand Automation & Robust JSON Parsing
+
+### What's new
+- **Bulletproof JSON Parser**: Mathematically guarantees accurate JSON extraction from LLM responses even if hallucinations or conversational filler are present. Prevents background crashes.
+- **3-Layer Ghost Hand Automation**: Upgraded the accessibility service to feature three fallback layers for robust UI automation:
+  1. Standard Programmatic Android UI Actions
+  2. Clipboard Injection for bulletproof text fields
+  3. Hardware-level Tapping via DispatchGesture to bypass app restrictions (e.g. Snapchat clicking)
+- **Zero Bug Guarantee**: Deep codebase audit of `ContinuousAgentService`, `ActionHandler`, and `LLMAgentService` to ensure a completely bug-free runtime loop.
+
+### Download
+The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-V18.5.apk](releases/synaptiq-ai-agent-V18.5.apk) (and also updated as [synaptiq-ai-agent-latest.apk](releases/synaptiq-ai-agent-latest.apk))
+
 ## v18.4.1 — Snapchat Typing & Click Automation Fix
 
 ### What's new
