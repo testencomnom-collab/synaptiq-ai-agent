@@ -28,6 +28,8 @@ class AgentAccessibilityService : AccessibilityService() {
         var targetApp = ""
         var recipient = ""
         var step = 0
+        var searchClicked = false
+        var nameTyped = false
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -105,8 +107,9 @@ class AgentAccessibilityService : AccessibilityService() {
         // WhatsApp specific automation
         if (AutomationState.targetApp == "com.whatsapp" && event.packageName?.toString() == "com.whatsapp") {
             if (AutomationState.step == 1) {
+                // Try finding contact directly first
                 val contactNodes = rootNode.findAccessibilityNodeInfosByText(AutomationState.recipient)
-                if (contactNodes.isNotEmpty()) {
+                if (contactNodes.isNotEmpty() && AutomationState.nameTyped) {
                     for (node in contactNodes) {
                         if (node.isClickable) {
                             node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
@@ -120,6 +123,41 @@ class AgentAccessibilityService : AccessibilityService() {
                             node.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.step = 2
                             break
+                        }
+                    }
+                } else if (!AutomationState.nameTyped) {
+                    // Start Search flow
+                    val searchIcons = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/menuitem_search")
+                    if (searchIcons.isNotEmpty() && !AutomationState.searchClicked) {
+                        searchIcons.first().performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                        AutomationState.searchClicked = true
+                    } else if (AutomationState.searchClicked) {
+                        val searchInputs = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/search_src_text")
+                        if (searchInputs.isNotEmpty()) {
+                            val args = android.os.Bundle().apply {
+                                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, AutomationState.recipient)
+                            }
+                            searchInputs.first().performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                            AutomationState.nameTyped = true
+                        }
+                    } else {
+                        // Sometimes the picker shows the contact directly without typing
+                        if (contactNodes.isNotEmpty()) {
+                            for (node in contactNodes) {
+                                if (node.isClickable) {
+                                    node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                                    AutomationState.step = 2
+                                    break
+                                } else if (node.parent?.isClickable == true) {
+                                    node.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                                    AutomationState.step = 2
+                                    break
+                                } else if (node.parent?.parent?.isClickable == true) {
+                                    node.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                                    AutomationState.step = 2
+                                    break
+                                }
+                            }
                         }
                     }
                 }
@@ -196,11 +234,15 @@ class AgentAccessibilityService : AccessibilityService() {
                         if (node.isClickable) {
                             node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.isRunning = false
+                            AutomationState.searchClicked = false
+                            AutomationState.nameTyped = false
                             AutomationState.step = 0
                             return
                         } else if (node.parent?.isClickable == true) {
                             node.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.isRunning = false
+                            AutomationState.searchClicked = false
+                            AutomationState.nameTyped = false
                             AutomationState.step = 0
                             return
                         }
@@ -213,5 +255,7 @@ class AgentAccessibilityService : AccessibilityService() {
     override fun onInterrupt() {
         Log.d("AgentAccessibility", "Accessibility Service Interrupted")
         AutomationState.isRunning = false
+        AutomationState.searchClicked = false
+        AutomationState.nameTyped = false
     }
 }

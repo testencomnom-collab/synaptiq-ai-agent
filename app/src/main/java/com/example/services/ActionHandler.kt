@@ -53,7 +53,12 @@ object ActionHandler {
             if (cursor.moveToFirst()) {
                 val numIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
                 if (numIndex != -1) {
-                    return cursor.getString(numIndex)
+                    val rawNum = cursor.getString(numIndex)
+                    var cleanNum = rawNum?.replace(Regex("[^0-9+]"), "")
+                    if (cleanNum?.startsWith("00") == true) {
+                        cleanNum = "+" + cleanNum.substring(2)
+                    }
+                    return cleanNum
                 }
             }
         }
