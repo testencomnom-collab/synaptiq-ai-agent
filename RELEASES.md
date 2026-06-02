@@ -1,5 +1,17 @@
 # Release Notes
 
+## v18.1.0 — Crash Fixes & Auto-Scroll Update
+
+### What's new
+- **Auto-Scroll Navigation**: Der Agent kann nun mit `SCROLL_DOWN` und `SCROLL_UP` selbstständig durch Apps und Menüs scrollen.
+- **Memory Leak gefixt**: Der AgentAccessibilityService gibt Accessibility-Nodes nach dem Auslesen korrekt frei (`recycle()`), was Abstürze durch OutOfMemoryError verhindert.
+- **15-Sekunden Timeout Fix**: Die UI-Aktions-Schleife hat nun ein Timeout. Hängt sich der Screen-Reader auf, friert der Agent nicht mehr ein.
+- **Netzwerk-Stabilität verbessert**: Verbindungsabbrüche (z.B. TimeoutException beim LLM) würgen die Task nicht mehr hart ab. Der Agent pausiert für 5 Sekunden und versucht es dann erneut.
+- **Code & UI Cleanup**: Veraltete UI-Elemente und toter Code aus vorherigen Architektur-Versionen wurden bereinigt.
+
+### Download
+The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-V18-crash-fixes.apk](releases/synaptiq-ai-agent-V18-crash-fixes.apk)
+
 ## v18.0.0 — Autonomous "Think-Act-Observe" Update
 
 ### What's new

@@ -12,7 +12,7 @@
 
 <br>
 
-[![Download APK](https://img.shields.io/badge/Download-Latest_APK_V18_Bug_Fixes-FF4500?style=for-the-badge&logo=android&logoColor=white)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/synaptiq-ai-agent-V18-Bug-Fixes.apk)
+[![Download APK](https://img.shields.io/badge/Download-Latest_APK_V18_crash_fixes-FF4500?style=for-the-badge&logo=android&logoColor=white)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/synaptiq-ai-agent-V18-crash-fixes.apk)
 
 </div>
 
@@ -38,8 +38,9 @@ Welcome to the future of mobile assistance! The **On-Device AI Agent** acts as a
    **Das Feature ist vollständig implementiert!**  
    **Wie es funktioniert:** Die KI speichert bestimmte Fakten über dich dauerhaft ab (z.B. Namen deiner Freunde, deinen Arbeitsort, deine Lieblingsmusik) in einer sicheren Room-Datenbank. Über ein neues Gehirn-Icon (Brain UI) in der oberen Leiste der App kannst du alle von der KI gelernten Erinnerungen live einsehen, einzeln per Papierkorb löschen oder das gesamte Gedächtnis zurücksetzen.
 
-5. 🎨 **Beautiful Modern UI**  
-   A sleek, dark-mode focused UI with a brand new custom app icon, dynamic animations, and premium glassmorphic elements. Multilanguage support included!
+5. 🎨 **Beautiful Modern UI & Multilanguage**  
+   A sleek, dark-mode focused UI with a brand new custom app icon, dynamic animations, and premium glassmorphic elements. 
+   **Mehrsprachigkeit:** Die App und das LLM unterstützen dynamisch Englisch und Deutsch, ohne Sprachmischmasch.
 
 6. 🔌 **Fully Offline Simulated Agents**  
    Download JSON configurations for complex frameworks like **OpenHands, Goose, Browser-Use, CrewAI, and Flowise**. The app simulates how these complex AI workflows operate on a mobile layout.
@@ -47,8 +48,11 @@ Welcome to the future of mobile assistance! The **On-Device AI Agent** acts as a
 7. 📱 **Mobile Automation Engine**  
    Automatically parses complex user intents (like "Book a flight on Tuesday and invite John") to execute complex system actions like booking calendar events or drafting emails based on conversational queries.
 
-8. 🚀 **Autonomous "Autopilot" Mode (God-Mode)**  
-   A continuous Background Foreground Service that implements a full **Think-Act-Observe Loop**. The agent can read the current screen natively via Accessibility Services (`OBSERVE`), plan next steps (`THINK`), execute UI automation or system commands (`ACT`), and features a safe Kill-Switch (Stop-Button) in the UI to abort operations at any time.
+8. 🚀 **Autonomer KI-Agent (Autopilot Mode)**  
+   Läuft im Hintergrund als Foreground Service mit CPU-WakeLock. Implementiert einen vollständigen **Think-Act-Observe Loop**: Der Agent kann selbstständig nachdenken (`THINK`), Handlungen ausführen (`SYSTEM_ACTION`) und den aktuellen Bildschirminhalt lesen (`OBSERVE`). Inklusive sicherem Kill-Switch (Stop-Button) in der UI.
+
+9. 📜 **Auto-Scroll Navigation**  
+   Der Agent kann native UI-Elemente durchsuchen und selbstständig scrollen (`SCROLL_DOWN` / `SCROLL_UP`), um mehr Kontext zu erhalten, falls das gewünschte Element nicht sofort sichtbar ist.
 
 ---
 

@@ -250,6 +250,8 @@ class LLMAgentService(
             - If they ask to open any app, use "SYSTEM_ACTION" with the app name in "targetApp" and leave "instruction" and "recipient" empty.
             - If the user explicitly or implicitly states a new fact about themselves (e.g., name, job, preferences, favorites), extract it and add it to the "newFactsLearned" JSON array. Keep the facts concise, e.g., "User's favorite food is pizza".
             - If you need to know what is currently visible on the user's screen to decide your next action, use "OBSERVE". The system will return a text dump of all readable UI elements on the current screen.
+            - If you need to scroll down to reveal more content on the screen, use "SCROLL_DOWN".
+            - If you need to scroll up on the screen, use "SCROLL_UP".
             - If the overall task given by the user is fully completed, use "FINISH".
             
             You MUST return your entire output as a strictly valid, parsable JSON object. Do not include any markdown backticks, explanations outside the JSON, or leading/trailing text. The JSON structure MUST be:
@@ -257,7 +259,7 @@ class LLMAgentService(
                "thought": "Describe your step-by-step reasoning",
                "responseText": "Interactive assistant message detailing what actions are drafted or performed",
                "hasAction": true/false,
-               "actionType": "EMAIL" or "CALENDAR" or "SYSTEM_ACTION" or "OBSERVE" or "FINISH" or "NONE",
+               "actionType": "EMAIL" or "CALENDAR" or "SYSTEM_ACTION" or "OBSERVE" or "SCROLL_DOWN" or "SCROLL_UP" or "FINISH" or "NONE",
                "emailAction": {
                   "recipient": "email address of the contact to email",
                   "subject": "email subject",

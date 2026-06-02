@@ -109,15 +109,35 @@ class ContinuousAgentService : Service() {
                         AgentAccessibilityService.AutomationState.isRunning = true
                         AgentAccessibilityService.AutomationState.step = 1
                         
-                        while (AgentAccessibilityService.AutomationState.isRunning && isActive) {
+                        var waitTime = 0
+                        // Warte maximal 15 Sekunden (30 * 500ms) auf den AccessibilityService
+                        while (AgentAccessibilityService.AutomationState.isRunning && isActive && waitTime < 30) {
                             delay(500)
+                            waitTime++
                         }
-                        currentStepRecord += " -> Result: UI Action on ${proposal.systemActionApp} completed."
+                        if (AgentAccessibilityService.AutomationState.isRunning) {
+                            // Timeout erreicht, Brechstange ziehen, damit der Agent nicht hängt
+                            AgentAccessibilityService.AutomationState.isRunning = false 
+                            currentStepRecord += " -> Result: Timeout! UI Action took too long."
+                        } else {
+                            currentStepRecord += " -> Result: UI Action on ${proposal.systemActionApp} completed."
+                        }
                     }
                     "OBSERVE" -> {
                         val screenText = AgentAccessibilityService.instance?.captureScreenText() ?: "[Fehler: Accessibility Service inaktiv]"
                         currentStepRecord += "\n[CURRENT SCREEN DUMP]: $screenText" 
                         delay(1000)
+                    }
+                    "SCROLL_DOWN", "SCROLL_UP" -> {
+                        val success = AgentAccessibilityService.instance?.performScroll(proposal.actionType) == true
+                        if (success) {
+                            currentStepRecord += " -> Result: Scrolled ${proposal.actionType} successfully."
+                            delay(1500) // Warten, bis Scroll-Animation fertig ist
+                            val screenText = AgentAccessibilityService.instance?.captureScreenText() ?: "[Fehler]"
+                            currentStepRecord += "\n[CURRENT SCREEN DUMP AFTER SCROLL]: $screenText" 
+                        } else {
+                            currentStepRecord += " -> Result: Scroll failed (no scrollable view found)."
+                        }
                     }
                     else -> {
                         delay(1000)
@@ -128,7 +148,9 @@ class ContinuousAgentService : Service() {
                 
             } catch (e: Exception) {
                 Log.e("ContinuousAgent", "Fehler in der autonomen Schleife", e)
-                isTaskFinished = true
+                // Fehler nicht hart abbrechen, sondern kurz warten und dann erneut probieren
+                delay(5000)
+                actionHistory.add("Step $stepCount - ERROR: ${e.message}")
             }
         }
         

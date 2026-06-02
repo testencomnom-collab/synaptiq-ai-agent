@@ -273,6 +273,7 @@ class AgentAccessibilityService : AccessibilityService() {
         val rootNode = rootInActiveWindow ?: return "[Konnte Bildschirm nicht lesen - kein Root Window]"
         val textList = mutableListOf<String>()
         extractTextRecursively(rootNode, textList)
+        rootNode.recycle()
         return textList.joinToString(" | ")
     }
 
@@ -293,5 +294,28 @@ class AgentAccessibilityService : AccessibilityService() {
                 child.recycle()
             }
         }
+    }
+
+    fun performScroll(direction: String): Boolean {
+        val rootNode = rootInActiveWindow ?: return false
+        val action = if (direction == "SCROLL_DOWN") AccessibilityNodeInfo.ACTION_SCROLL_FORWARD else AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD
+        val success = scrollFirstScrollableNode(rootNode, action)
+        rootNode.recycle()
+        return success
+    }
+
+    private fun scrollFirstScrollableNode(node: AccessibilityNodeInfo, action: Int): Boolean {
+        if (node.isScrollable) {
+            return node.performAction(action)
+        }
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i)
+            if (child != null) {
+                val success = scrollFirstScrollableNode(child, action)
+                child.recycle()
+                if (success) return true
+            }
+        }
+        return false
     }
 }
