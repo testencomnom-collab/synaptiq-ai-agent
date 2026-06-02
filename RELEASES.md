@@ -3,11 +3,11 @@
 ## v18.1.0 — Crash Fixes & Auto-Scroll Update
 
 ### What's new
-- **Auto-Scroll Navigation**: Der Agent kann nun mit `SCROLL_DOWN` und `SCROLL_UP` selbstständig durch Apps und Menüs scrollen.
-- **Memory Leak gefixt**: Der AgentAccessibilityService gibt Accessibility-Nodes nach dem Auslesen korrekt frei (`recycle()`), was Abstürze durch OutOfMemoryError verhindert.
-- **15-Sekunden Timeout Fix**: Die UI-Aktions-Schleife hat nun ein Timeout. Hängt sich der Screen-Reader auf, friert der Agent nicht mehr ein.
-- **Netzwerk-Stabilität verbessert**: Verbindungsabbrüche (z.B. TimeoutException beim LLM) würgen die Task nicht mehr hart ab. Der Agent pausiert für 5 Sekunden und versucht es dann erneut.
-- **Code & UI Cleanup**: Veraltete UI-Elemente und toter Code aus vorherigen Architektur-Versionen wurden bereinigt.
+- **Auto-Scroll Navigation**: The agent can now automatically scroll through apps and menus using `SCROLL_DOWN` and `SCROLL_UP`.
+- **Memory Leak Fixed**: The AgentAccessibilityService correctly releases accessibility nodes (`recycle()`) after reading them, preventing crashes caused by OutOfMemoryError.
+- **15-Second Timeout Fix**: The UI action loop now has a timeout. If the screen reader gets stuck, the agent will no longer freeze.
+- **Improved Network Stability**: Connection drops (e.g., TimeoutException from the LLM) no longer hard-crash the task. The agent pauses for 5 seconds and then retries.
+- **Code & UI Cleanup**: Obsolete UI elements and dead code from previous architecture versions have been cleaned up.
 
 ### Download
 The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-V18-crash-fixes.apk](releases/synaptiq-ai-agent-V18-crash-fixes.apk)
@@ -15,12 +15,12 @@ The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-
 ## v18.0.0 — Autonomous "Think-Act-Observe" Update
 
 ### What's new
-- **ContinuousAgentService hinzugefügt**: Der Agent läuft nun im Hintergrund via Foreground Service.
-- **Think-Act-Observe Loop implementiert**: Der Agent kann selbstständig nächste Schritte planen und ausführen.
-- **Kill-Switch (Stop-Button)**: In der UI hinzugefügt, um den Loop jederzeit sicher abzubrechen.
-- **Echtes Screen-Reading (OBSERVE)**: Der Agent kann über den AgentAccessibilityService den aktuellen Bildschirminhalt auslesen und in seine Entscheidungsfindung einbeziehen.
-- **WakeLock für Standby**: Der Agent nutzt einen Partial WakeLock, um die CPU aktiv zu halten und so auch bei ausgeschaltetem Bildschirm problemlos als Hintergrundservice weiterzuarbeiten.
-- **Optimiertes Kurzzeitgedächtnis**: Der Agent trackt die letzten 5 Aktionen als History-Kontext, was Token-Limits schont und Endlosschleifen vorbeugt.
+- **Added ContinuousAgentService**: The agent now runs in the background via a Foreground Service.
+- **Implemented Think-Act-Observe Loop**: The agent can autonomously plan and execute its next steps.
+- **Kill-Switch (Stop Button)**: Added to the UI to safely abort the loop at any time.
+- **True Screen-Reading (OBSERVE)**: The agent can read the current screen content via the AgentAccessibilityService and incorporate it into its decision-making.
+- **WakeLock for Standby**: The agent uses a Partial WakeLock to keep the CPU active, allowing it to seamlessly continue background tasks even when the screen is turned off.
+- **Optimized Short-Term Memory**: The agent tracks the last 5 actions as history context, saving token limits and preventing infinite loops.
 
 ### Download
 The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-V18-Bug-Fixes.apk](releases/synaptiq-ai-agent-V18-Bug-Fixes.apk)
