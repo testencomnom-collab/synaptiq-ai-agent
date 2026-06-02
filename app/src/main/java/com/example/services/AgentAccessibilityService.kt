@@ -54,6 +54,7 @@ class AgentAccessibilityService : AccessibilityService() {
                 val friendNodes = rootNode.findAccessibilityNodeInfosByText(AutomationState.recipient)
                 if (friendNodes.isNotEmpty()) {
                     for (friendNode in friendNodes) {
+                        if (friendNode.className?.toString()?.contains("EditText") == true) continue
                         if (friendNode.isClickable) {
                             friendNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.step = 2
@@ -155,6 +156,7 @@ class AgentAccessibilityService : AccessibilityService() {
                 val contactNodes = rootNode.findAccessibilityNodeInfosByText(AutomationState.recipient)
                 if (contactNodes.isNotEmpty() && AutomationState.nameTyped) {
                     for (node in contactNodes) {
+                        if (node.className?.toString()?.contains("EditText") == true) continue
                         if (node.isClickable) {
                             node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.step = 2
@@ -188,6 +190,7 @@ class AgentAccessibilityService : AccessibilityService() {
                         // Sometimes the picker shows the contact directly without typing
                         if (contactNodes.isNotEmpty()) {
                             for (node in contactNodes) {
+                                if (node.className?.toString()?.contains("EditText") == true) continue
                                 if (node.isClickable) {
                                     node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                                     AutomationState.step = 2
