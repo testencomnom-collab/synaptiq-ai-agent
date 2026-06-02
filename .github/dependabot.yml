@@ -5,15 +5,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    labels:
-      - "dependencies"
-      - "security"
-
   # Check for updates to Gradle/Android dependencies
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
       interval: "weekly"
-    labels:
-      - "dependencies"
-      - "android"
