@@ -198,11 +198,11 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
                             requestSuccess = true
                         }
                     } else {
-                        Log.e("AgentViewModel", "Fehler HTTP Code: ${response.code}")
+                        Log.e("AgentViewModel", "Error HTTP Code: ${response.code}")
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    Log.e("AgentViewModel", "Fehler beim Download", e)
+                    Log.e("AgentViewModel", "Error downloading model", e)
                 }
             } else {
                 requestSuccess = true
@@ -218,7 +218,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
                         id = agentId,
                         name = agentModel.name,
                         category = agentModel.category,
-                        systemPrompt = "Du bist ${agentModel.name}, ein lokaler On-Device KI Spezialist im Bereich ${agentModel.category}. Beachte Konfidenz und Präzision.",
+                        systemPrompt = "You are ${agentModel.name}, a local on-device AI specialist in the field of ${agentModel.category}. Maintain confidence and precision.",
                         toolsAllowed = "NONE"
                     )
                     repository.saveAgentConfig(config)
@@ -235,11 +235,11 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
                     preferencesManager.activeLocalAgents = activeSet
                     activeAgentsFlow.value = activeSet
 
-                    statusMessage.value = "Erfolg! ${agentModel?.name ?: agentId} greift jetzt 100% offline auf Gemma 2B zu."
+                    statusMessage.value = "Success! ${agentModel?.name ?: agentId} is now accessing Gemma 2B 100% offline."
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    statusMessage.value = "Fehler: Lokales Modell konnte nicht heruntergeladen werden."
+                    statusMessage.value = "Error: Local model could not be downloaded."
                     if (modelFile.exists()) {
                         modelFile.delete() // Clean partial file
                     }
@@ -392,7 +392,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
                 // Auto-reply logic
                 try {
             val svc = agentService
-            val prompt = "Der Nutzer hat folgende Benachrichtigung von $sender (App: $appName) erhalten:\n\"$message\"\nBitte schreibe eine kurze, direkte und passende Antwortnachricht auf diese Benachrichtigung im Namen des Nutzers."
+            val prompt = "The user has received the following notification from $sender (App: $appName):\n\"$message\"\nPlease write a short, direct, and appropriate reply to this notification on behalf of the user."
                     val replyText = svc.generateDirectReply(activeChatAgentId.value, prompt)
                     repository.updateNotificationReply(id, replyText)
                     statusMessage.value = "AI replied to $sender automatically."

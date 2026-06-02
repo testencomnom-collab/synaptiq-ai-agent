@@ -53,14 +53,14 @@ fun NotificationManagerTab(
             ) {
                 Column {
                     Text(
-                        "Benachrichtigungen",
+                        "Notifications",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         letterSpacing = (-0.5).sp
                     )
                     Text(
-                        "${notifications.size} ungelesene Events",
+                        "${notifications.size} unread events",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Medium
@@ -77,7 +77,7 @@ fun NotificationManagerTab(
                     ) {
                         Icon(
                             Icons.Default.DeleteSweep,
-                            contentDescription = "Benachrichtigungen leeren",
+                            contentDescription = "Clear notifications",
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)
                         )
@@ -92,7 +92,7 @@ fun NotificationManagerTab(
                     ) {
                         Icon(
                             Icons.Default.Add,
-                            contentDescription = "Benachrichtigung simulieren",
+                            contentDescription = "Simulate notification",
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(20.dp)
                         )
@@ -134,13 +134,13 @@ fun NotificationManagerTab(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Default.NotificationsOff,
-                        contentDescription = "Keine Benachrichtigungen",
+                        contentDescription = "No notifications",
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        "Keine Benachrichtigungen", 
+                        "No notifications", 
                         fontWeight = FontWeight.Bold, 
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurface
@@ -157,9 +157,9 @@ fun NotificationManagerTab(
             ) {
                 items(notifications, key = { it.id }) { notif ->
                     NotificationCard(notif, onReplyWithAgent = {
-                        val prompt = "Analysiere diese Benachrichtigung und entwerfe eine Antwort:\n\n" +
-                                "Von: ${notif.sender} (App: ${notif.appName})\n" +
-                                "Inhalt: ${notif.message}\n"
+                        val prompt = "Analyze this notification and draft a reply:\n\n" +
+                                "From: ${notif.sender} (App: ${notif.appName})\n" +
+                                "Content: ${notif.message}\n"
                         viewModel.sendMessage(prompt)
                         onNavigateToChat()
                     })
@@ -174,7 +174,7 @@ fun NotificationManagerTab(
             shape = RoundedCornerShape(28.dp),
             title = { 
                 Text(
-                    "Benachrichtigung simulieren", 
+                    "Simulate notification", 
                     fontWeight = FontWeight.Bold, 
                     fontSize = 18.sp
                 ) 
@@ -299,7 +299,7 @@ fun NotificationCard(
                 ) {
                     Icon(
                         Icons.Default.SupportAgent,
-                        contentDescription = "Verarbeiten",
+                        contentDescription = "Process",
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))

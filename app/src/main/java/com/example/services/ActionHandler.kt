@@ -240,17 +240,17 @@ object ActionHandler {
                     try {
                         val smsManager = context.getSystemService(SmsManager::class.java)
                         smsManager.sendTextMessage(phone, null, finalInstruction, null, null)
-                        showToastOnMainThread(context, "SMS an $sysRecipient gesendet", Toast.LENGTH_LONG)
+                        showToastOnMainThread(context, "SMS sent to $sysRecipient", Toast.LENGTH_LONG)
                         return true
                     } catch (e: Exception) {
-                        showToastOnMainThread(context, "SMS Fehler: ${e.message}", Toast.LENGTH_SHORT)
+                        showToastOnMainThread(context, "SMS Error: ${e.message}", Toast.LENGTH_SHORT)
                     }
                 } else if (phone != null) {
                     val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$phone")).apply {
                         putExtra("sms_body", finalInstruction)
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                    executeDirectly(context, intent, "SMS an $sysRecipient senden?")
+                    executeDirectly(context, intent, "Send SMS to $sysRecipient?")
                     return true
                 }
                 return false

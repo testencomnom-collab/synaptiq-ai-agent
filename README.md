@@ -53,11 +53,11 @@ Welcome to the future of mobile assistance! The **On-Device AI Agent** acts as a
 7. 📱 **Mobile Automation Engine**  
    Automatically parses complex user intents (like "Book a flight on Tuesday and invite John") to execute complex system actions like booking calendar events or drafting emails based on conversational queries.
 
-8. 🚀 **Autonomer KI-Agent (Autopilot Mode)**  
-   Läuft im Hintergrund als Foreground Service mit CPU-WakeLock. Implementiert einen vollständigen **Think-Act-Observe Loop**: Der Agent kann selbstständig nachdenken (`THINK`), Handlungen ausführen (`SYSTEM_ACTION`) und den aktuellen Bildschirminhalt lesen (`OBSERVE`). Inklusive sicherem Kill-Switch (Stop-Button) in der UI.
+8. 🚀 **Autonomous AI Agent (Autopilot Mode)**  
+   Runs in the background as a Foreground Service with a CPU WakeLock. Implements a complete **Think-Act-Observe Loop**: The agent can autonomously think (`THINK`), execute actions (`SYSTEM_ACTION`), and read the current screen content (`OBSERVE`). Includes a secure kill-switch (Stop Button) in the UI.
 
 9. 📜 **Auto-Scroll Navigation**  
-   Der Agent kann native UI-Elemente durchsuchen und selbstständig scrollen (`SCROLL_DOWN` / `SCROLL_UP`), um mehr Kontext zu erhalten, falls das gewünschte Element nicht sofort sichtbar ist.
+   The agent can search native UI elements and scroll autonomously (`SCROLL_DOWN` / `SCROLL_UP`) to gather more context if the desired element is not immediately visible.
 
 ---
 

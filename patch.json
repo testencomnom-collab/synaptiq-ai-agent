@@ -1,0 +1,13 @@
+{
+  "allow_merge_commit": false,
+  "allow_rebase_merge": false,
+  "allow_squash_merge": true,
+  "security_and_analysis": {
+    "secret_scanning_validity_checks": {
+      "status": "enabled"
+    },
+    "secret_scanning_non_provider_patterns": {
+      "status": "enabled"
+    }
+  }
+}

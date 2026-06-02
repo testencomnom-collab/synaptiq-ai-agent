@@ -50,12 +50,12 @@ class LocalInferenceEngine(private val context: Context) {
     suspend fun generateResponse(prompt: String): String = withContext(Dispatchers.IO) {
         try {
             val inference = llmInference
-                ?: return@withContext "Fehler: Die lokale MediaPipe Engine ist nicht bereit. (Möglicherweise reicht der Arbeitsspeicher (RAM) dieses Geräts nicht aus, um ein 2B LLM zu laden, oder die Datei fehlt.)"
+                ?: return@withContext "Error: The local MediaPipe engine is not ready. (This device may not have enough RAM to load a 2B LLM, or the model file is missing.)"
             
             inference.generateResponse(prompt)
         } catch (e: Throwable) {
             e.printStackTrace()
-            "Fehler bei der echten lokalen On-Device Generierung: ${e.message}"
+            "Error during local on-device generation: ${e.message}"
         }
     }
     

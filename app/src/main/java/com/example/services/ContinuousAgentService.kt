@@ -124,7 +124,7 @@ class ContinuousAgentService : Service() {
                         }
                     }
                     "OBSERVE" -> {
-                        val screenText = AgentAccessibilityService.instance?.captureScreenText() ?: "[Fehler: Accessibility Service inaktiv]"
+                        val screenText = AgentAccessibilityService.instance?.captureScreenText() ?: "[Error: Accessibility Service inactive]"
                         currentStepRecord += "\n[CURRENT SCREEN DUMP]: $screenText" 
                         delay(1000)
                     }
@@ -133,7 +133,7 @@ class ContinuousAgentService : Service() {
                         if (success) {
                             currentStepRecord += " -> Result: Scrolled ${proposal.actionType} successfully."
                             delay(1500) // Warten, bis Scroll-Animation fertig ist
-                            val screenText = AgentAccessibilityService.instance?.captureScreenText() ?: "[Fehler]"
+                            val screenText = AgentAccessibilityService.instance?.captureScreenText() ?: "[Error]"
                             currentStepRecord += "\n[CURRENT SCREEN DUMP AFTER SCROLL]: $screenText" 
                         } else {
                             currentStepRecord += " -> Result: Scroll failed (no scrollable view found)."
@@ -147,8 +147,8 @@ class ContinuousAgentService : Service() {
                 actionHistory.add(currentStepRecord)
                 
             } catch (e: Exception) {
-                Log.e("ContinuousAgent", "Fehler in der autonomen Schleife", e)
-                // Fehler nicht hart abbrechen, sondern kurz warten und dann erneut probieren
+                Log.e("ContinuousAgent", "Error in the autonomous loop", e)
+                // Do not hard-abort on error, but wait briefly and then try again
                 delay(5000)
                 actionHistory.add("Step $stepCount - ERROR: ${e.message}")
             }
@@ -164,7 +164,7 @@ class ContinuousAgentService : Service() {
                 wakeLock?.release()
             }
         } catch (e: Exception) {
-            Log.e("ContinuousAgent", "Fehler beim Freigeben des WakeLocks", e)
+            Log.e("ContinuousAgent", "Error releasing WakeLock", e)
         }
     }
 

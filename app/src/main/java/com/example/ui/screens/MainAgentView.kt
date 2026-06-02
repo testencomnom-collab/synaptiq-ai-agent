@@ -1366,19 +1366,19 @@ fun SystemCalendarTab(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
                             Icons.Outlined.CalendarToday,
-                            contentDescription = "Keine Termine",
+                            contentDescription = "No events",
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
                         )
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            "Kalender ist frei", 
+                            "Calendar is clear", 
                             fontWeight = FontWeight.Bold, 
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            "Erstelle einen Termin oder lasse den KI-Agenten über den Chat deine Agenda für dich planen!",
+                            "Create an event or let the AI Agent plan your agenda via chat!",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
@@ -1608,7 +1608,7 @@ fun AgentSettingsTab(
                     letterSpacing = (-0.5).sp
                 )
                 Text(
-                    "Verwalte deine lokalen KI-Modelle, System-Berechtigungen und API-Zugangsdaten isoliert und sicher auf deinem Smartphone.",
+                    "Manage your local AI models, system permissions, and API credentials securely and isolated on your smartphone.",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 18.sp,
@@ -2020,8 +2020,8 @@ fun AgentSettingsTab(
 
                     // Calendar permission row
                     PermissionItemRow(
-                        title = "Kalender-Synchronisation",
-                        description = "Erlaubt das automatische Prüfen und Buchen von Terminen.",
+                        title = "Calendar Synchronization",
+                        description = "Allows automatic checking and booking of events.",
                         hasPermission = hasCalendarPerms,
                         onRequest = onRequestCalendarPerms
                     )
@@ -2030,8 +2030,8 @@ fun AgentSettingsTab(
 
                     // Contacts permission row
                     PermissionItemRow(
-                        title = "Kontakte-Synchronisation",
-                        description = "Erlaubt das Zuordnen von Namen und Kontaktdaten.",
+                        title = "Contacts Synchronization",
+                        description = "Allows linking names and contact details.",
                         hasPermission = hasContactsPerms,
                         onRequest = onRequestContactsPerms
                     )
@@ -2040,8 +2040,8 @@ fun AgentSettingsTab(
 
                     // Location permission row
                     PermissionItemRow(
-                        title = "Standort-Zugriff",
-                        description = "Für ortsabhängige Planungen und Empfehlungen.",
+                        title = "Location Access",
+                        description = "For location-based planning and recommendations.",
                         hasPermission = hasLocationPerms,
                         onRequest = onRequestLocationPerms
                     )
@@ -2050,8 +2050,8 @@ fun AgentSettingsTab(
 
                     // SMS permission row
                     PermissionItemRow(
-                        title = "SMS-Schnittstelle",
-                        description = "Ermöglicht das automatische Entwerfen von SMS-Antworten.",
+                        title = "SMS Interface",
+                        description = "Enables automatic drafting of SMS replies.",
                         hasPermission = hasSmsPerms,
                         onRequest = onRequestSmsPerms
                     )
@@ -2061,8 +2061,8 @@ fun AgentSettingsTab(
                     // Audio permission row
                     val hasAudioPerms = remember { mutableStateOf(permissionsManager.isGranted(AgentPermission.RECORD_AUDIO)) }
                     PermissionItemRow(
-                        title = "Mikrofon-Zugriff",
-                        description = "Erlaubt Sprachsteuerung und Diktierfunktion.",
+                        title = "Microphone Access",
+                        description = "Allows voice control and dictation features.",
                         hasPermission = hasAudioPerms.value,
                         onRequest = {
                             coroutineScope.launch {
@@ -2077,8 +2077,8 @@ fun AgentSettingsTab(
                     // Camera permission row
                     val hasCameraPerms = remember { mutableStateOf(permissionsManager.isGranted(AgentPermission.CAMERA)) }
                     PermissionItemRow(
-                        title = "Kamera-Zugriff",
-                        description = "Für Bildanalyse und Computer Vision Features.",
+                        title = "Camera Access",
+                        description = "For image analysis and computer vision features.",
                         hasPermission = hasCameraPerms.value,
                         onRequest = {
                             coroutineScope.launch {
@@ -2093,8 +2093,8 @@ fun AgentSettingsTab(
                     // Phone permission row
                     val hasPhonePerms = remember { mutableStateOf(permissionsManager.isGranted(AgentPermission.CALL_PHONE) && permissionsManager.isGranted(AgentPermission.READ_CALL_LOG)) }
                     PermissionItemRow(
-                        title = "Telefon-Anrufe",
-                        description = "Erlaubt das Tätigen von Anrufen und Lesen der Historie.",
+                        title = "Phone Calls",
+                        description = "Allows making calls and reading history.",
                         hasPermission = hasPhonePerms.value,
                         onRequest = {
                             coroutineScope.launch {
@@ -2178,8 +2178,8 @@ fun AgentSettingsTab(
                     // Manage Storage Row
                     val hasManageStorage = remember { mutableStateOf(SpecialPermissionsHelper.isExternalStorageManager()) }
                     SpecialPermissionItemRow(
-                        title = "Voller Speicherzugriff",
-                        description = "Erlaubt das Lesen und Schreiben aller Dateien auf dem Gerät.",
+                        title = "Full Storage Access",
+                        description = "Allows reading and writing of all files on the device.",
                         hasPermission = hasManageStorage.value,
                         onOpenSettings = {
                             context.startActivity(SpecialPermissionsHelper.getManageStorageIntent(context))
@@ -2288,7 +2288,7 @@ fun AgentSettingsTab(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Erweiterter Systemzugriff",
+                            "Advanced System Access",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = MaterialTheme.colorScheme.onSurface
@@ -2297,7 +2297,7 @@ fun AgentSettingsTab(
                     
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        "Damit der KI Agent vollständig auf Systemfunktionen zugreifen und diese automatisieren kann, muss die App als Geräteadministrator konfiguriert werden.",
+                        "To allow the AI Agent to fully access and automate system functions, the app must be configured as a device administrator.",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 16.sp
@@ -2312,26 +2312,26 @@ fun AgentSettingsTab(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                "Geräteadministrator",
+                                "Device Administrator",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                "Für tiefgreifende Automationen",
+                                "For deep automation capabilities",
                                 fontSize = 11.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         if (isAdmin) {
-                            Icon(Icons.Default.CheckCircle, "Aktiv", tint = Color(0xFF4CAF50))
+                            Icon(Icons.Default.CheckCircle, "Active", tint = Color(0xFF4CAF50))
                         } else {
                             Button(
                                 onClick = { 
                                     try {
                                         val intent = android.content.Intent(android.app.admin.DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
                                         intent.putExtra(android.app.admin.DevicePolicyManager.EXTRA_DEVICE_ADMIN, android.content.ComponentName(context, com.example.permissions.MyDeviceAdminReceiver::class.java))
-                                        intent.putExtra(android.app.admin.DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Notwendig für erweiterte KI-Systemautomationen")
+                                        intent.putExtra(android.app.admin.DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Necessary for advanced AI system automations")
                                         context.startActivity(intent)
                                     } catch (e: Exception) {
                                         // Fallback

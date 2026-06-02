@@ -54,13 +54,13 @@ fun MemoryScreen(viewModel: AgentViewModel, onBack: () -> Unit) {
                 title = { Text(androidx.compose.ui.res.stringResource(com.example.R.string.memory_long_term)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Zurück")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
                     if (memories.isNotEmpty()) {
                         IconButton(onClick = { showClearConfirmDialog = true }) {
-                            Icon(Icons.Filled.DeleteOutline, contentDescription = "Alles löschen", tint = MaterialTheme.colorScheme.error)
+                            Icon(Icons.Filled.DeleteOutline, contentDescription = "Delete all", tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 },
@@ -92,14 +92,14 @@ fun MemoryScreen(viewModel: AgentViewModel, onBack: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Das Gedächtnis ist noch leer.",
+                        text = "Memory is empty.",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Der KI-Agent lernt automatisch Fakten über dich (z. B. Namen deiner Freunde, Hobbys, Wohnort), wenn du mit ihm schreibst.",
+                        text = "The AI Agent automatically learns facts about you (e.g., names of your friends, hobbies, location) as you chat.",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -113,7 +113,7 @@ fun MemoryScreen(viewModel: AgentViewModel, onBack: () -> Unit) {
                 ) {
                     item {
                         Text(
-                            text = "Der Agent greift automatisch auf dieses Wissen zurück, um personalisierte Aktionen auszuführen, ohne dich doppelt fragen zu müssen.",
+                            text = "The agent automatically uses this knowledge to perform personalized actions without asking you twice.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -143,7 +143,7 @@ fun MemoryScreen(viewModel: AgentViewModel, onBack: () -> Unit) {
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "Erlernt am $dateString",
+                                        text = "Learned on $dateString",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
@@ -151,7 +151,7 @@ fun MemoryScreen(viewModel: AgentViewModel, onBack: () -> Unit) {
                                 IconButton(onClick = { viewModel.deleteMemory(memory.id) }) {
                                     Icon(
                                         imageVector = Icons.Filled.Delete,
-                                        contentDescription = "Fakt löschen",
+                                        contentDescription = "Delete fact",
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
                                 }

@@ -82,8 +82,8 @@ class LLMAgentService(
     }
 
     /**
-     * Führt die Anfrage über das lokale On-Device Modell (Gemma 2B via MediaPipe) aus.
-     * Wird sowohl für explizit lokale Agenten als auch als Fallback bei API-Fehlern genutzt.
+     * Executes the query via the local on-device model (Gemma 2B via MediaPipe).
+     * Used for both explicitly local agents and as a fallback for API errors.
      */
     private suspend fun executeLocalFallback(agentId: String, userQuery: String, isApiFallback: Boolean, fallbackReason: String): AgentProposal {
         val logLabel = if (isApiFallback) "Hybrid Fallback" else agentId
@@ -94,8 +94,8 @@ class LLMAgentService(
         }
         if (!isLocalEngineReady) {
             return AgentProposal(
-                thought = "Lokale Modellgewichte fehlen oder Engine Error.",
-                responseText = "Fehler: Das MediaPipe Modell ist nicht aktiv. Bitte lade das Modell in der Bibliothek herunter.",
+                thought = "Local model weights missing or Engine Error.",
+                responseText = "Error: The MediaPipe model is not active. Please download the model in the library.",
                 hasAction = false,
                 actionType = "NONE"
             )
@@ -122,8 +122,8 @@ class LLMAgentService(
     }
 
     /**
-     * Führt die Anfrage über die Cloud-API (OpenAI, Anthropic oder Gemini) aus.
-     * Wirft eine Exception bei Fehlern, damit der Aufrufer den Hybrid-Fallback auslösen kann.
+     * Executes the query via the Cloud API (OpenAI, Anthropic, or Gemini).
+     * Throws an exception on error so that the caller can trigger the hybrid fallback.
      */
     private suspend fun executeCloudQuery(
         agentId: String,
