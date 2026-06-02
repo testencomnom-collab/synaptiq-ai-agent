@@ -53,14 +53,24 @@ class AgentAccessibilityService : AccessibilityService() {
                 // Find friend by name
                 val friendNodes = rootNode.findAccessibilityNodeInfosByText(AutomationState.recipient)
                 if (friendNodes.isNotEmpty()) {
-                    val friendNode = friendNodes.first()
-                    // Click it
-                    if (friendNode.isClickable) {
-                        friendNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.step = 2
-                    } else if (friendNode.parent?.isClickable == true) {
-                        friendNode.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.step = 2
+                    for (friendNode in friendNodes) {
+                        if (friendNode.isClickable) {
+                            friendNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.step = 2
+                            break
+                        } else if (friendNode.parent?.isClickable == true) {
+                            friendNode.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.step = 2
+                            break
+                        } else if (friendNode.parent?.parent?.isClickable == true) {
+                            friendNode.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.step = 2
+                            break
+                        } else if (friendNode.parent?.parent?.parent?.isClickable == true) {
+                            friendNode.parent?.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.step = 2
+                            break
+                        }
                     }
                 }
             }
@@ -71,44 +81,68 @@ class AgentAccessibilityService : AccessibilityService() {
                 // It might have content description "Senden" or "Send"
                 val sendNodesDesc = rootNode.findAccessibilityNodeInfosByText("Senden")
                 if (sendNodesDesc.isNotEmpty()) {
-                    val sendBtn = sendNodesDesc.first()
-                    if (sendBtn.isClickable) {
-                        sendBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.isRunning = false // Automation complete
-                        AutomationState.step = 0
-                        return
-                    } else if (sendBtn.parent?.isClickable == true) {
-                        sendBtn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.isRunning = false
-                        AutomationState.step = 0
-                        return
+                    for (sendBtn in sendNodesDesc) {
+                        if (sendBtn.isClickable) {
+                            sendBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.isRunning = false // Automation complete
+                            AutomationState.step = 0
+                            return
+                        } else if (sendBtn.parent?.isClickable == true) {
+                            sendBtn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.isRunning = false
+                            AutomationState.step = 0
+                            return
+                        } else if (sendBtn.parent?.parent?.isClickable == true) {
+                            sendBtn.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.isRunning = false
+                            AutomationState.step = 0
+                            return
+                        }
                     }
                 }
                 
                 val sendNodesDescEN = rootNode.findAccessibilityNodeInfosByText("Send")
                 if (sendNodesDescEN.isNotEmpty()) {
-                    val sendBtn = sendNodesDescEN.first()
-                    if (sendBtn.isClickable) {
-                        sendBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.isRunning = false // Automation complete
-                        AutomationState.step = 0
-                        return
-                    } else if (sendBtn.parent?.isClickable == true) {
-                        sendBtn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.isRunning = false
-                        AutomationState.step = 0
-                        return
+                    for (sendBtn in sendNodesDescEN) {
+                        if (sendBtn.isClickable) {
+                            sendBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.isRunning = false // Automation complete
+                            AutomationState.step = 0
+                            return
+                        } else if (sendBtn.parent?.isClickable == true) {
+                            sendBtn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.isRunning = false
+                            AutomationState.step = 0
+                            return
+                        } else if (sendBtn.parent?.parent?.isClickable == true) {
+                            sendBtn.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.isRunning = false
+                            AutomationState.step = 0
+                            return
+                        }
                     }
                 }
                 
                 // Fallback: look for view id containing "send_to_bottom_panel_send_button"
                 val sendNodesId = rootNode.findAccessibilityNodeInfosByViewId("com.snapchat.android:id/send_to_bottom_panel_send_button")
                 if (sendNodesId.isNotEmpty()) {
-                    val sendBtn = sendNodesId.first()
-                    if (sendBtn.isClickable) {
-                        sendBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.isRunning = false
-                        AutomationState.step = 0
+                    for (sendBtn in sendNodesId) {
+                        if (sendBtn.isClickable) {
+                            sendBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.isRunning = false
+                            AutomationState.step = 0
+                            return
+                        } else if (sendBtn.parent?.isClickable == true) {
+                            sendBtn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.isRunning = false
+                            AutomationState.step = 0
+                            return
+                        } else if (sendBtn.parent?.parent?.isClickable == true) {
+                            sendBtn.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.isRunning = false
+                            AutomationState.step = 0
+                            return
+                        }
                     }
                 }
             }
