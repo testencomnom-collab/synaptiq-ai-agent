@@ -1,5 +1,15 @@
 # Release Notes
 
+## v18.4.1 — Snapchat Typing & Click Automation Fix
+
+### What's new
+- **Direct Snapchat Search Typing**: Fixed race conditions during contact searches in Snapchat by injecting text directly into the search bar.
+- **Recursive Click Traversal**: Added a recursive parent-clicking helper (`performClickRecursively`) to reliably click target buttons or contacts up to 6 parent layers deep.
+- **Improved Automation Reliability**: Solved cases where automated messages required manual clicks before sending.
+
+### Download
+The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-V18.4.1.apk](releases/synaptiq-ai-agent-V18.4.1.apk) (and also updated as [synaptiq-ai-agent-latest.apk](releases/synaptiq-ai-agent-latest.apk))
+
 ## v18.4.0 — Messaging Automation & Lifecycle Update
 
 ### What's new
