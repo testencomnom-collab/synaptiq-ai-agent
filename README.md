@@ -18,6 +18,11 @@
 
 ---
 
+> [!CAUTION]
+> <span style="color:red">**Wichtiger Sicherheitshinweis / Urgent Security Notice**</span>
+> 
+> Es wird **dringend empfohlen**, stets die neueste Version dieser App (via APK oder Code) herunterzuladen und Ihre Abhängigkeiten aktuell zu halten. Veraltete Versionen können bekannte **Sicherheitslücken (CVEs)** aufweisen, die Ihr Gerät und Ihre Daten gefährden. Wir schließen diese Lücken fortlaufend durch Updates. Nutzen Sie niemals alte, unsupportete Builds!
+
 ## 🌟 Vision & Overview
 Welcome to the future of mobile assistance! The **On-Device AI Agent** acts as an intelligent bridge between advanced Large Language Models (LLMs) and your Android device's native ecosystem. Whether you're connected to the cloud or completely offline, this agent seamlessly parses conversational language and executes real actions on your smartphone—from sending WhatsApp messages to tweaking system settings.
 
