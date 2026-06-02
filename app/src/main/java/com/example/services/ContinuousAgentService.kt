@@ -4,9 +4,11 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
@@ -15,6 +17,7 @@ class ContinuousAgentService : Service() {
 
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
+    private var wakeLock: PowerManager.WakeLock? = null
     
     companion object {
         const val EXTRA_TASK = "extra_task"
@@ -34,6 +37,7 @@ class ContinuousAgentService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP_SERVICE) {
             serviceJob.cancelChildren()
+            releaseWakeLock()
             isRunning.value = false
             updateNotification("Agent manuell gestoppt.")
             stopSelf()
@@ -47,6 +51,7 @@ class ContinuousAgentService : Service() {
             try {
                 runAutonomousLoop(task)
             } finally {
+                releaseWakeLock()
                 isRunning.value = false
             }
         }
@@ -60,54 +65,60 @@ class ContinuousAgentService : Service() {
             return
         }
 
+        // WakeLock aktivieren (hält die CPU wach)
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SynaptiQ::AgentWakeLock")
+        wakeLock?.acquire(10 * 60 * 1000L) 
+
         var isTaskFinished = false
-        var currentContext = "Initial User Task: $initialTask\n"
+        val actionHistory = mutableListOf<String>() 
         var stepCount = 0
-        val maxSteps = 15 // Sicherheitslimit gegen Endlosschleifen
+        val maxSteps = 15 
 
         while (!isTaskFinished && stepCount < maxSteps && isActive) {
             stepCount++
             updateNotification("Agent arbeitet: Schritt $stepCount...")
 
             try {
-                // 1. THINK (Denken)
+                val recentHistory = actionHistory.takeLast(5).joinToString("\n")
+                val promptContext = "User Task: $initialTask\nRecent History:\n$recentHistory"
+
                 val proposal = llmService.executeAgentQuery(
                     agentId = "system", 
-                    userQuery = currentContext + "\nWhat is the next step to achieve the user's task? Return your next action.", 
+                    userQuery = promptContext + "\nWhat is the next step to achieve the user's task? Return your next action.", 
                     notificationsContext = emptyList() 
                 )
                 
-                currentContext += "\nAgent Thought: ${proposal.thought}"
-                currentContext += "\nAgent Action Executed: ${proposal.actionType}"
+                var currentStepRecord = "Step $stepCount - Thought: ${proposal.thought} | Action: ${proposal.actionType}"
 
-                // 2. ACT & OBSERVE (Handeln & Beobachten)
                 when (proposal.actionType) {
                     "FINISH" -> {
                         isTaskFinished = true
                         updateNotification("Aufgabe abgeschlossen!")
                     }
                     "SYSTEM_ACTION" -> {
-                        // UI-Automatisierung starten
                         AgentAccessibilityService.AutomationState.targetApp = proposal.systemActionApp ?: ""
                         AgentAccessibilityService.AutomationState.recipient = proposal.systemActionRecipient ?: ""
                         AgentAccessibilityService.AutomationState.isRunning = true
                         AgentAccessibilityService.AutomationState.step = 1
                         
-                        // Warten, bis der AccessibilityService die UI-Aktion beendet hat
                         while (AgentAccessibilityService.AutomationState.isRunning && isActive) {
                             delay(500)
                         }
-                        currentContext += "\nSystem Observation: UI Action on ${proposal.systemActionApp} completed."
+                        currentStepRecord += " -> Result: UI Action on ${proposal.systemActionApp} completed."
                     }
                     "OBSERVE" -> {
-                        val screenText = AgentAccessibilityService.instance?.captureScreenText() ?: "[Fehler: Accessibility Service nicht aktiv]"
-                        currentContext += "\nSystem Observation (Current Screen Text): $screenText"
+                        val screenText = AgentAccessibilityService.instance?.captureScreenText() ?: "[Fehler: Accessibility Service inaktiv]"
+                        currentStepRecord += "\n[CURRENT SCREEN DUMP]: $screenText" 
                         delay(1000)
                     }
                     else -> {
                         delay(1000)
                     }
                 }
+                
+                actionHistory.add(currentStepRecord)
+                
             } catch (e: Exception) {
                 Log.e("ContinuousAgent", "Fehler in der autonomen Schleife", e)
                 isTaskFinished = true
@@ -116,6 +127,16 @@ class ContinuousAgentService : Service() {
         
         updateNotification("Agent inaktiv.")
         stopSelf()
+    }
+
+    private fun releaseWakeLock() {
+        try {
+            if (wakeLock?.isHeld == true) {
+                wakeLock?.release()
+            }
+        } catch (e: Exception) {
+            Log.e("ContinuousAgent", "Fehler beim Freigeben des WakeLocks", e)
+        }
     }
 
     private fun createNotification(text: String): Notification {
@@ -147,6 +168,7 @@ class ContinuousAgentService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         serviceJob.cancel()
+        releaseWakeLock()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

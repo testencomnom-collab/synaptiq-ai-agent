@@ -7,6 +7,8 @@
 - **Think-Act-Observe Loop implementiert**: Der Agent kann selbstständig nächste Schritte planen und ausführen.
 - **Kill-Switch (Stop-Button)**: In der UI hinzugefügt, um den Loop jederzeit sicher abzubrechen.
 - **Echtes Screen-Reading (OBSERVE)**: Der Agent kann über den AgentAccessibilityService den aktuellen Bildschirminhalt auslesen und in seine Entscheidungsfindung einbeziehen.
+- **WakeLock für Standby**: Der Agent nutzt einen Partial WakeLock, um die CPU aktiv zu halten und so auch bei ausgeschaltetem Bildschirm problemlos als Hintergrundservice weiterzuarbeiten.
+- **Optimiertes Kurzzeitgedächtnis**: Der Agent trackt die letzten 5 Aktionen als History-Kontext, was Token-Limits schont und Endlosschleifen vorbeugt.
 
 ### Download
 The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-V18-Autonomous.apk](releases/synaptiq-ai-agent-V18-Autonomous.apk)
