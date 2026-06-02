@@ -61,18 +61,18 @@ Welcome to the future of mobile assistance! The **On-Device AI Agent** acts as a
 The heavy lifting for Android Intents and System Automations is completely decoupled into a dedicated `ActionHandler` and a robust `AgentAccessibilityService`. Everything runs seamlessly in the background!
 
 ```mermaid
-graph TD;
-    A[User Query] --> B{API Key Configured?};
-    B -- Yes --> C[Cloud LLM Provider<br/>OpenAI / Anthropic / Gemini];
-    B -- No --> D[Local Simulation Engine / Gemma 2B];
+graph TD
+    A["User Query"] --> B{"API Key Configured?"}
+    B -- Yes --> C["Cloud LLM Provider<br/>OpenAI / Anthropic / Gemini"]
+    B -- No --> D["Local Simulation Engine / Gemma 2B"]
     
-    C --> E{Action Intent Detected?};
-    D --> E;
+    C --> E{"Action Intent Detected?"}
+    D --> E
     
-    E -- System Action --> G[ActionHandler: Flashlight, Alarms, Background Service];
-    E -- Messengers --> I[ActionHandler: WhatsApp, Snapchat, Instagram, Discord, Telegram];
-    E -- Media/Productivity --> J[ActionHandler: Spotify, Web Search, Calendar, Email];
-    E -- None --> H[Return Conversational Chat Response];
+    E -- System Action --> G["ActionHandler: Flashlight, Alarms, Background Service"]
+    E -- Messengers --> I["ActionHandler: WhatsApp, Snapchat, Instagram, Discord, Telegram"]
+    E -- Media/Productivity --> J["ActionHandler: Spotify, Web Search, Calendar, Email"]
+    E -- None --> H["Return Conversational Chat Response"]
 ```
 
 ---
