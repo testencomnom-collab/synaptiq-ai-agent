@@ -22,10 +22,11 @@ class ConfirmationActivity : Activity() {
             .setPositiveButton("Erlauben") { _, _ ->
                 if (targetIntent != null) {
                     if (!appName.isNullOrEmpty() && !recipient.isNullOrEmpty()) {
-                        AgentAccessibilityService.AutomationState.isRunning = true
-                        AgentAccessibilityService.AutomationState.targetApp = appName
-                        AgentAccessibilityService.AutomationState.recipient = recipient
-                        AgentAccessibilityService.AutomationState.step = 1
+                        AgentAccessibilityService.AutomationState.start(
+                            app = appName,
+                            contact = recipient,
+                            startStep = 1
+                        )
                     }
                     try {
                         startActivity(targetIntent)

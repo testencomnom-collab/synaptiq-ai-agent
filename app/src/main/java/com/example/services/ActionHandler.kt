@@ -154,7 +154,7 @@ object ActionHandler {
                         putExtra(AlarmClock.EXTRA_MESSAGE, sysRecipient.ifEmpty { "AI Alarm" })
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                    executeDirectly(context, intent, "Wecker für \$hour:\$minute stellen?")
+                    executeDirectly(context, intent, "Wecker für $hour:$minute stellen?")
                     return true
                 }
             }
@@ -166,7 +166,7 @@ object ActionHandler {
                     putExtra(AlarmClock.EXTRA_SKIP_UI, false)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                executeDirectly(context, intent, "Timer für \$minutes Minuten stellen?")
+                executeDirectly(context, intent, "Timer für $minutes Minuten stellen?")
                 return true
             }
             "spotify" -> {
@@ -177,7 +177,7 @@ object ActionHandler {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 return try {
-                    executeDirectly(context, intent, "Spotify Suche nach: \$finalInstruction durchführen?")
+                    executeDirectly(context, intent, "Spotify Suche nach: $finalInstruction durchführen?")
                     true
                 } catch (e: Exception) {
                     // Fallback to opening app
@@ -194,7 +194,7 @@ object ActionHandler {
                     putExtra(SearchManager.QUERY, finalInstruction)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                executeDirectly(context, intent, "Im Web nach '\$finalInstruction' suchen?")
+                executeDirectly(context, intent, "Im Web nach '$finalInstruction' suchen?")
                 return true
             }
         }
@@ -281,19 +281,20 @@ object ActionHandler {
                             }
                         }
                         try {
-                            AgentAccessibilityService.AutomationState.isRunning = true
-                            AgentAccessibilityService.AutomationState.targetApp = targetPackage
-                            AgentAccessibilityService.AutomationState.recipient = sysRecipient
-                            AgentAccessibilityService.AutomationState.step = if (targetPackage == "com.whatsapp" && phone != null) 3 else 1
+                            AgentAccessibilityService.AutomationState.start(
+                                app = targetPackage,
+                                contact = sysRecipient,
+                                startStep = if (targetPackage == "com.whatsapp" && phone != null) 3 else 1
+                            )
 
-                            val msg = "Nachricht via \$sysApp senden?"
+                            val msg = "Nachricht via $sysApp senden?"
                             executeDirectly(context, shareIntent, msg, targetPackage, sysRecipient)
                             return true
                         } catch (e: Exception) {
                             val launchIntent = pm.getLaunchIntentForPackage(targetPackage)
                             if (launchIntent != null) {
                                 launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                executeDirectly(context, launchIntent, "\$sysApp öffnen?")
+                                executeDirectly(context, launchIntent, "$sysApp öffnen?")
                                 return true
                             }
                         }
@@ -301,7 +302,7 @@ object ActionHandler {
                         val launchIntent = pm.getLaunchIntentForPackage(targetPackage)
                         if (launchIntent != null) {
                             launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            executeDirectly(context, launchIntent, "\$sysApp öffnen?")
+                            executeDirectly(context, launchIntent, "$sysApp öffnen?")
                             return true
                         } else {
                             showToastOnMainThread(context, "$sysApp is not installed on this device.", Toast.LENGTH_LONG)
@@ -320,7 +321,7 @@ object ActionHandler {
                     val launchIntent = pm.getLaunchIntentForPackage(match.packageName)
                     if (launchIntent != null) {
                         launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        executeDirectly(context, launchIntent, "\$sysApp öffnen?")
+                        executeDirectly(context, launchIntent, "$sysApp öffnen?")
                         return true
                     }
                 } else {

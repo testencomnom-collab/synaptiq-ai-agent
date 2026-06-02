@@ -104,10 +104,11 @@ class ContinuousAgentService : Service() {
                         updateNotification(getString(R.string.task_completed))
                     }
                     "SYSTEM_ACTION" -> {
-                        AgentAccessibilityService.AutomationState.targetApp = proposal.systemActionApp ?: ""
-                        AgentAccessibilityService.AutomationState.recipient = proposal.systemActionRecipient ?: ""
-                        AgentAccessibilityService.AutomationState.isRunning = true
-                        AgentAccessibilityService.AutomationState.step = 1
+                        AgentAccessibilityService.AutomationState.start(
+                            app = proposal.systemActionApp ?: "",
+                            contact = proposal.systemActionRecipient ?: "",
+                            startStep = 1
+                        )
                         
                         var waitTime = 0
                         // Warte maximal 15 Sekunden (30 * 500ms) auf den AccessibilityService
@@ -117,7 +118,7 @@ class ContinuousAgentService : Service() {
                         }
                         if (AgentAccessibilityService.AutomationState.isRunning) {
                             // Timeout erreicht, Brechstange ziehen, damit der Agent nicht hängt
-                            AgentAccessibilityService.AutomationState.isRunning = false 
+                            AgentAccessibilityService.AutomationState.stop() 
                             currentStepRecord += " -> Result: Timeout! UI Action took too long."
                         } else {
                             currentStepRecord += " -> Result: UI Action on ${proposal.systemActionApp} completed."

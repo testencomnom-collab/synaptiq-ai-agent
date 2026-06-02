@@ -40,6 +40,41 @@ class AgentAccessibilityService : AccessibilityService() {
         var step = 0
         var searchClicked = false
         var nameTyped = false
+
+        fun start(app: String, contact: String, startStep: Int) {
+            targetApp = app
+            recipient = contact
+            step = startStep
+            searchClicked = false
+            nameTyped = false
+            isRunning = true
+            Log.d("AgentAccessibility", "AutomationState started: app=$app, recipient=$contact, step=$startStep")
+        }
+
+        fun stop() {
+            isRunning = false
+            targetApp = ""
+            recipient = ""
+            step = 0
+            searchClicked = false
+            nameTyped = false
+            Log.d("AgentAccessibility", "AutomationState stopped and reset")
+        }
+    }
+
+    private fun findFirstEditText(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        if (node.className?.toString()?.contains("EditText") == true) {
+            return node
+        }
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            val found = findFirstEditText(child)
+            if (found != null) {
+                return found
+            }
+            child.recycle()
+        }
+        return null
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -52,103 +87,130 @@ class AgentAccessibilityService : AccessibilityService() {
             if (AutomationState.step == 1) {
                 // Find friend by name
                 val friendNodes = rootNode.findAccessibilityNodeInfosByText(AutomationState.recipient)
+                var foundAndClicked = false
                 if (friendNodes.isNotEmpty()) {
                     for (friendNode in friendNodes) {
                         if (friendNode.className?.toString()?.contains("EditText") == true) continue
                         if (friendNode.isClickable) {
                             friendNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.step = 2
+                            foundAndClicked = true
                             break
                         } else if (friendNode.parent?.isClickable == true) {
                             friendNode.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.step = 2
+                            foundAndClicked = true
                             break
                         } else if (friendNode.parent?.parent?.isClickable == true) {
                             friendNode.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.step = 2
+                            foundAndClicked = true
                             break
                         } else if (friendNode.parent?.parent?.parent?.isClickable == true) {
                             friendNode.parent?.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.step = 2
+                            foundAndClicked = true
                             break
+                        }
+                    }
+                }
+
+                if (!foundAndClicked && !AutomationState.nameTyped) {
+                    // Start Snapchat search flow if friend is not found
+                    var searchInputNode: AccessibilityNodeInfo? = null
+                    val searchInputs = rootNode.findAccessibilityNodeInfosByViewId("com.snapchat.android:id/search_text_input")
+                    if (searchInputs.isNotEmpty()) {
+                        searchInputNode = searchInputs.first()
+                    } else {
+                        val searchInputs2 = rootNode.findAccessibilityNodeInfosByViewId("com.snapchat.android:id/search_box")
+                        if (searchInputs2.isNotEmpty()) {
+                            searchInputNode = searchInputs2.first()
+                        } else {
+                            searchInputNode = findFirstEditText(rootNode)
+                        }
+                    }
+
+                    if (searchInputNode != null) {
+                        if (!AutomationState.searchClicked) {
+                            if (searchInputNode.isClickable) {
+                                searchInputNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            } else if (searchInputNode.parent?.isClickable == true) {
+                                searchInputNode.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            }
+                            AutomationState.searchClicked = true
+                        } else {
+                            val args = android.os.Bundle().apply {
+                                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, AutomationState.recipient)
+                            }
+                            searchInputNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                            AutomationState.nameTyped = true
                         }
                     }
                 }
             }
 
             if (AutomationState.step == 2) {
-                // After clicking friend, find the send button. 
-                // In Snapchat share sheet, the send button is usually a button at the bottom right.
-                // It might have content description "Senden" or "Send"
+                // After clicking friend, find the send button.
                 val sendNodesDesc = rootNode.findAccessibilityNodeInfosByText("Senden")
                 if (sendNodesDesc.isNotEmpty()) {
                     for (sendBtn in sendNodesDesc) {
                         if (sendBtn.isClickable) {
                             sendBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false // Automation complete
-                            AutomationState.step = 0
+                            AutomationState.stop()
                             return
                         } else if (sendBtn.parent?.isClickable == true) {
                             sendBtn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false
-                            AutomationState.step = 0
+                            AutomationState.stop()
                             return
                         } else if (sendBtn.parent?.parent?.isClickable == true) {
                             sendBtn.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false
-                            AutomationState.step = 0
+                            AutomationState.stop()
                             return
                         }
                     }
                 }
-                
+
                 val sendNodesDescEN = rootNode.findAccessibilityNodeInfosByText("Send")
                 if (sendNodesDescEN.isNotEmpty()) {
                     for (sendBtn in sendNodesDescEN) {
                         if (sendBtn.isClickable) {
                             sendBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false // Automation complete
-                            AutomationState.step = 0
+                            AutomationState.stop()
                             return
                         } else if (sendBtn.parent?.isClickable == true) {
                             sendBtn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false
-                            AutomationState.step = 0
+                            AutomationState.stop()
                             return
                         } else if (sendBtn.parent?.parent?.isClickable == true) {
                             sendBtn.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false
-                            AutomationState.step = 0
+                            AutomationState.stop()
                             return
                         }
                     }
                 }
-                
+
                 // Fallback: look for view id containing "send_to_bottom_panel_send_button"
                 val sendNodesId = rootNode.findAccessibilityNodeInfosByViewId("com.snapchat.android:id/send_to_bottom_panel_send_button")
                 if (sendNodesId.isNotEmpty()) {
                     for (sendBtn in sendNodesId) {
                         if (sendBtn.isClickable) {
                             sendBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false
-                            AutomationState.step = 0
+                            AutomationState.stop()
                             return
                         } else if (sendBtn.parent?.isClickable == true) {
                             sendBtn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false
-                            AutomationState.step = 0
+                            AutomationState.stop()
                             return
                         } else if (sendBtn.parent?.parent?.isClickable == true) {
                             sendBtn.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false
-                            AutomationState.step = 0
+                            AutomationState.stop()
                             return
                         }
                     }
                 }
             }
         }
-        
+
         // WhatsApp specific automation
         if (AutomationState.targetApp == "com.whatsapp" && event.packageName?.toString() == "com.whatsapp") {
             if (AutomationState.step == 1) {
@@ -169,21 +231,62 @@ class AgentAccessibilityService : AccessibilityService() {
                             node.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.step = 2
                             break
+                        } else if (node.parent?.parent?.parent?.isClickable == true) {
+                            node.parent?.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.step = 2
+                            break
                         }
                     }
                 } else if (!AutomationState.nameTyped) {
                     // Start Search flow
+                    var searchIconNode: AccessibilityNodeInfo? = null
                     val searchIcons = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/menuitem_search")
-                    if (searchIcons.isNotEmpty() && !AutomationState.searchClicked) {
-                        searchIcons.first().performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.searchClicked = true
+                    if (searchIcons.isNotEmpty()) {
+                        searchIconNode = searchIcons.first()
+                    } else {
+                        val searchButtons = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/search_button")
+                        if (searchButtons.isNotEmpty()) {
+                            searchIconNode = searchButtons.first()
+                        } else {
+                            val searchDescEN = rootNode.findAccessibilityNodeInfosByText("Search")
+                            val searchDescDE = rootNode.findAccessibilityNodeInfosByText("Suchen")
+                            val searchDescAll = searchDescEN + searchDescDE
+                            for (node in searchDescAll) {
+                                if (node.isClickable || node.parent?.isClickable == true) {
+                                    searchIconNode = node
+                                    break
+                                }
+                            }
+                        }
+                    }
+
+                    if (searchIconNode != null && !AutomationState.searchClicked) {
+                        if (searchIconNode.isClickable) {
+                            searchIconNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.searchClicked = true
+                        } else if (searchIconNode.parent?.isClickable == true) {
+                            searchIconNode.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.searchClicked = true
+                        }
                     } else if (AutomationState.searchClicked) {
+                        var searchInputNode: AccessibilityNodeInfo? = null
                         val searchInputs = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/search_src_text")
                         if (searchInputs.isNotEmpty()) {
+                            searchInputNode = searchInputs.first()
+                        } else {
+                            val searchInputs2 = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/search_input")
+                            if (searchInputs2.isNotEmpty()) {
+                                searchInputNode = searchInputs2.first()
+                            } else {
+                                searchInputNode = findFirstEditText(rootNode)
+                            }
+                        }
+
+                        if (searchInputNode != null) {
                             val args = android.os.Bundle().apply {
                                 putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, AutomationState.recipient)
                             }
-                            searchInputs.first().performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                            searchInputNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
                             AutomationState.nameTyped = true
                         }
                     } else {
@@ -203,6 +306,10 @@ class AgentAccessibilityService : AccessibilityService() {
                                     node.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                                     AutomationState.step = 2
                                     break
+                                } else if (node.parent?.parent?.parent?.isClickable == true) {
+                                    node.parent?.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                                    AutomationState.step = 2
+                                    break
                                 }
                             }
                         }
@@ -214,43 +321,62 @@ class AgentAccessibilityService : AccessibilityService() {
                 // In WhatsApp's share sheet, clicking a contact reveals a green "Next/Send" fab at the bottom right.
                 val sendNodesId = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/send")
                 val nextNodesId = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/next")
-                val allFabs = sendNodesId + nextNodesId
-                
+                val nextDescEN = rootNode.findAccessibilityNodeInfosByText("Next")
+                val nextDescDE = rootNode.findAccessibilityNodeInfosByText("Weiter")
+                val sendDescEN = rootNode.findAccessibilityNodeInfosByText("Send")
+                val sendDescDE = rootNode.findAccessibilityNodeInfosByText("Senden")
+                val allFabs = sendNodesId + nextNodesId + nextDescEN + nextDescDE + sendDescEN + sendDescDE
+
                 if (allFabs.isNotEmpty()) {
-                    val btn = allFabs.first()
-                    if (btn.isClickable) {
-                        btn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.step = 3 // Move to chat view
-                        return
-                    } else if (btn.parent?.isClickable == true) {
-                        btn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.step = 3
-                        return
+                    for (btn in allFabs) {
+                        if (btn.isClickable) {
+                            btn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.step = 3 // Move to chat view
+                            return
+                        } else if (btn.parent?.isClickable == true) {
+                            btn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.step = 3
+                            return
+                        } else if (btn.parent?.parent?.isClickable == true) {
+                            btn.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.step = 3
+                            return
+                        }
                     }
                 }
             }
-            
+
             if (AutomationState.step == 3) {
                 // In the actual chat window, find the final send button
                 val finalSendNodes = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/send")
+                val finalSendNodes2 = rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/send_button")
                 val descNodes = rootNode.findAccessibilityNodeInfosByText("Senden") + rootNode.findAccessibilityNodeInfosByText("Send")
-                val allFinal = finalSendNodes + descNodes
-                
+                val allFinal = finalSendNodes + finalSendNodes2 + descNodes
+
                 if (allFinal.isNotEmpty()) {
-                    val btn = allFinal.first()
-                    if (btn.isClickable) {
-                        btn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.isRunning = false
-                        AutomationState.step = 0
-                    } else if (btn.parent?.isClickable == true) {
-                        btn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                        AutomationState.isRunning = false
-                        AutomationState.step = 0
+                    for (btn in allFinal) {
+                        if (btn.isClickable) {
+                            btn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.stop()
+                            return
+                        } else if (btn.parent?.isClickable == true) {
+                            btn.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.stop()
+                            return
+                        } else if (btn.parent?.parent?.isClickable == true) {
+                            btn.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.stop()
+                            return
+                        } else if (btn.parent?.parent?.parent?.isClickable == true) {
+                            btn.parent?.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.stop()
+                            return
+                        }
                     }
                 }
             }
         }
-        
+
         // Generic automation for Instagram, Telegram, Discord
         val genericApps = setOf("com.instagram.android", "org.telegram.messenger", "com.discord")
         if (genericApps.contains(AutomationState.targetApp) && event.packageName?.toString() == AutomationState.targetApp) {
@@ -266,31 +392,33 @@ class AgentAccessibilityService : AccessibilityService() {
                             node.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             AutomationState.step = 2
                             break
+                        } else if (node.parent?.parent?.isClickable == true) {
+                            node.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.step = 2
+                            break
                         }
                     }
                 }
             }
             if (AutomationState.step == 2) {
-                val sendNodes = rootNode.findAccessibilityNodeInfosByText("Senden") + 
+                val sendNodes = rootNode.findAccessibilityNodeInfosByText("Senden") +
                                 rootNode.findAccessibilityNodeInfosByText("Send") +
                                 rootNode.findAccessibilityNodeInfosByText("Fertig") +
                                 rootNode.findAccessibilityNodeInfosByText("Done")
-                
+
                 if (sendNodes.isNotEmpty()) {
                     for (node in sendNodes) {
                         if (node.isClickable) {
                             node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false
-                            AutomationState.searchClicked = false
-                            AutomationState.nameTyped = false
-                            AutomationState.step = 0
+                            AutomationState.stop()
                             return
                         } else if (node.parent?.isClickable == true) {
                             node.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                            AutomationState.isRunning = false
-                            AutomationState.searchClicked = false
-                            AutomationState.nameTyped = false
-                            AutomationState.step = 0
+                            AutomationState.stop()
+                            return
+                        } else if (node.parent?.parent?.isClickable == true) {
+                            node.parent?.parent?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            AutomationState.stop()
                             return
                         }
                     }
@@ -301,9 +429,7 @@ class AgentAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {
         Log.d("AgentAccessibility", "Accessibility Service Interrupted")
-        AutomationState.isRunning = false
-        AutomationState.searchClicked = false
-        AutomationState.nameTyped = false
+        AutomationState.stop()
     }
 
     fun captureScreenText(): String {
