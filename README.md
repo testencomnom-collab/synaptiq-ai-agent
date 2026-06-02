@@ -12,7 +12,7 @@
 
 <br>
 
-[![Download APK](https://img.shields.io/badge/Download-Latest_APK_V17-FF4500?style=for-the-badge&logo=android&logoColor=white)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/synaptiq-ai-agent-V17-REWORK.apk)
+[![Download APK](https://img.shields.io/badge/Download-Latest_APK_V18-FF4500?style=for-the-badge&logo=android&logoColor=white)](https://github.com/testencomnom-collab/on-device-agent/raw/main/releases/synaptiq-ai-agent-V18-Autonomous.apk)
 
 </div>
 
@@ -46,6 +46,9 @@ Welcome to the future of mobile assistance! The **On-Device AI Agent** acts as a
 
 7. 📱 **Mobile Automation Engine**  
    Automatically parses complex user intents (like "Book a flight on Tuesday and invite John") to execute complex system actions like booking calendar events or drafting emails based on conversational queries.
+
+8. 🚀 **Autonomous "Autopilot" Mode (God-Mode)**  
+   A continuous Background Foreground Service that implements a full **Think-Act-Observe Loop**. The agent can read the current screen natively via Accessibility Services (`OBSERVE`), plan next steps (`THINK`), execute UI automation or system commands (`ACT`), and features a safe Kill-Switch (Stop-Button) in the UI to abort operations at any time.
 
 ---
 

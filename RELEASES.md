@@ -1,5 +1,17 @@
 # Release Notes
 
+## v18.0.0 — Autonomous "Think-Act-Observe" Update
+
+### What's new
+- **ContinuousAgentService hinzugefügt**: Der Agent läuft nun im Hintergrund via Foreground Service.
+- **Think-Act-Observe Loop implementiert**: Der Agent kann selbstständig nächste Schritte planen und ausführen.
+- **Kill-Switch (Stop-Button)**: In der UI hinzugefügt, um den Loop jederzeit sicher abzubrechen.
+- **Echtes Screen-Reading (OBSERVE)**: Der Agent kann über den AgentAccessibilityService den aktuellen Bildschirminhalt auslesen und in seine Entscheidungsfindung einbeziehen.
+
+### Download
+The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-V18-Autonomous.apk](releases/synaptiq-ai-agent-V18-Autonomous.apk)
+
+
 ## v1.0.0 — On-Device Agent
 
 ### What's new

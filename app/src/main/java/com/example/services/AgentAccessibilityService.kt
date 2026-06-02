@@ -8,8 +8,13 @@ import android.view.accessibility.AccessibilityNodeInfo
 
 class AgentAccessibilityService : AccessibilityService() {
 
+    companion object {
+        var instance: AgentAccessibilityService? = null
+    }
+
     override fun onServiceConnected() {
         super.onServiceConnected()
+        instance = this
         val info = AccessibilityServiceInfo().apply {
             eventTypes = AccessibilityEvent.TYPES_ALL_MASK
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
@@ -21,6 +26,11 @@ class AgentAccessibilityService : AccessibilityService() {
         }
         this.serviceInfo = info
         Log.d("AgentAccessibility", "Accessibility Service Connected")
+    }
+
+    override fun onUnbind(intent: android.content.Intent?): Boolean {
+        instance = null
+        return super.onUnbind(intent)
     }
 
     object AutomationState {
@@ -257,5 +267,31 @@ class AgentAccessibilityService : AccessibilityService() {
         AutomationState.isRunning = false
         AutomationState.searchClicked = false
         AutomationState.nameTyped = false
+    }
+
+    fun captureScreenText(): String {
+        val rootNode = rootInActiveWindow ?: return "[Konnte Bildschirm nicht lesen - kein Root Window]"
+        val textList = mutableListOf<String>()
+        extractTextRecursively(rootNode, textList)
+        return textList.joinToString(" | ")
+    }
+
+    private fun extractTextRecursively(node: AccessibilityNodeInfo, textList: MutableList<String>) {
+        val text = node.text?.toString()?.trim()
+        val contentDesc = node.contentDescription?.toString()?.trim()
+        
+        if (!text.isNullOrEmpty() && text !in textList) {
+            textList.add(text)
+        } else if (!contentDesc.isNullOrEmpty() && contentDesc !in textList) {
+            textList.add(contentDesc)
+        }
+
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i)
+            if (child != null) {
+                extractTextRecursively(child, textList)
+                child.recycle()
+            }
+        }
     }
 }

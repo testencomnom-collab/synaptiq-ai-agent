@@ -3,6 +3,7 @@ package com.example.ui.screens
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -285,6 +286,8 @@ fun AgentChatTab(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     var inputQuery by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
+    val isAutopilotRunning by com.example.services.ContinuousAgentService.isRunning.collectAsStateWithLifecycle()
 
     val speechRecognizerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -295,6 +298,18 @@ fun AgentChatTab(
             val spokenText = results?.firstOrNull()
             if (!spokenText.isNullOrEmpty()) {
                 inputQuery = spokenText
+            }
+        }
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted -> }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }
@@ -739,6 +754,45 @@ fun AgentChatTab(
                         Icons.Default.Mic,
                         contentDescription = "Spracheingabe",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+                IconButton(
+                    onClick = {
+                        if (isAutopilotRunning) {
+                            val intent = android.content.Intent(context, com.example.services.ContinuousAgentService::class.java).apply {
+                                action = com.example.services.ContinuousAgentService.ACTION_STOP_SERVICE
+                            }
+                            context.startService(intent)
+                        } else if (inputQuery.trim().isNotEmpty() && !isLoading) {
+                            val intent = android.content.Intent(context, com.example.services.ContinuousAgentService::class.java).apply {
+                                putExtra(com.example.services.ContinuousAgentService.EXTRA_TASK, inputQuery)
+                            }
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                context.startForegroundService(intent)
+                            } else {
+                                context.startService(intent)
+                            }
+                            inputQuery = ""
+                            keyboardController?.hide()
+                        }
+                    },
+                    enabled = isAutopilotRunning || (!isLoading && inputQuery.trim().isNotEmpty()),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(percent = 50))
+                        .background(
+                            if (isAutopilotRunning) Color(0xFFEF4444) // Red for Stop
+                            else if (inputQuery.trim().isNotEmpty() && !isLoading) Color(0xFF8B5CF6) // Purple for autopilot
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                        )
+                ) {
+                    Icon(
+                        if (isAutopilotRunning) Icons.Default.Stop else Icons.Default.RocketLaunch,
+                        contentDescription = if (isAutopilotRunning) "Autopilot stoppen" else "Autopilot starten",
+                        tint = if (isAutopilotRunning || (inputQuery.trim().isNotEmpty() && !isLoading)) Color.White 
+                               else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                         modifier = Modifier.size(20.dp)
                     )
                 }
