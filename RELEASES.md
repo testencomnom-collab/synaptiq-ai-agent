@@ -1,5 +1,17 @@
 # Release Notes
 
+## v18.4.0 — Messaging Automation & Lifecycle Update
+
+### What's new
+- **Hands-Free Messaging Automation**: Enhanced the accessibility service for 100% hands-free WhatsApp and Snapchat message dispatching.
+- **Search & Type Fallbacks**: Implemented fallback search and typing flows in Snapchat and WhatsApp to look up contacts when they are not in the recent list.
+- **Clean State Lifecycle**: Added proper state initialization and cleanup (`start()` and `stop()`) to prevent stale flags from freezing subsequent automation runs.
+- **Improved Traversal**: Utilized deep parent-node click searches and localized content-description matches.
+- **String Interpolation Fixes**: Resolved string interpolation escapes that caused raw template strings to show in UI toasts/alerts.
+
+### Download
+The APK is available in the [`releases/`](releases/) folder: [synaptiq-ai-agent-V18.4.apk](releases/synaptiq-ai-agent-V18.4.apk) (and also updated as [synaptiq-ai-agent-latest.apk](releases/synaptiq-ai-agent-latest.apk))
+
 ## v18.1.0 — Crash Fixes & Auto-Scroll Update
 
 ### What's new
