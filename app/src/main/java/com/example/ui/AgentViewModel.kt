@@ -224,7 +224,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
                         id = agentId,
                         name = agentModel.name,
                         category = agentModel.category,
-                        systemPrompt = "Du bist ${agentModel.name}, ein hoch-optimierter, lokaler KI-Assistent für logisches Denken. Du bist direkt und 100% offline auf dem Gerät des Nutzers aktiv. Antworte präzise, analytisch, hilfsbereit und fokussiere dich auf logisch korrekte Lösungen.",
+                        systemPrompt = "Du bist ${agentModel.name}, ein hoch-optimierter, lokaler KI-Assistent für logisches Denken. Du arbeitest zu 100 % offline auf dem Gerät des Nutzers. Deine Hauptaufgabe ist es, komplexe Probleme präzise und analytisch zu lösen. Erkläre deine Gedankengänge bei mathematischen, programmiertechnischen oder logischen Fragen immer Schritt für Schritt, bevor du die finale Antwort gibst. Antworte stets auf Deutsch, sei direkt und fokussiere dich auf Fakten.",
                         toolsAllowed = "NONE"
                     )
                     repository.saveAgentConfig(config)
