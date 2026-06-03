@@ -1,6 +1,5 @@
 ### What's new
-- **Auto-Scroll Navigation**: The agent can now automatically scroll through apps and menus using SCROLL_DOWN and SCROLL_UP.
-- **Memory Leak Fixed**: The AgentAccessibilityService correctly releases accessibility nodes after reading them.
-- **15-Second Timeout Fix**: The UI action loop now has a timeout.
-- **Improved Network Stability**: Connection drops no longer hard-crash the task.
-- **Code & UI Cleanup**: Obsolete UI elements and dead code have been cleaned up.
+- **Zero CPU Thrashing**: Accessibility Service now uses an intelligent 800ms throttle, drastically reducing CPU usage and eliminating UI freezing during intensive automations.
+- **Race Condition Fixes**: Core architecture is now fully thread-safe. Fixed critical double-checked locking issues in LLMAgentService and AgentEngineManager that caused Memory Leaks and OOM crashes.
+- **Android 14+ FGS Fix**: Explicitly added `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` preventing `SecurityException` crashes for Foreground Services.
+- **CI/CD Stabilization**: Fixed missing executable bits on the build scripts preventing CodeQL analysis workflows from completing.
