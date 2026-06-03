@@ -334,4 +334,50 @@ object ActionHandler {
         }
         return false
     }
+    fun handleLocalAction(context: Context, json: JSONObject): Boolean {
+        val action = json.optString("action", "")
+        val target = json.optString("target", "")
+        
+        val pm = context.packageManager
+        val packageMap = mapOf(
+            "whatsapp" to "com.whatsapp",
+            "youtube" to "com.google.android.youtube",
+            "spotify" to "com.spotify.music"
+        )
+        val targetPackage = packageMap[target.lowercase().trim()] ?: target
+        
+        when (action) {
+            "open_app" -> {
+                val launchIntent = pm.getLaunchIntentForPackage(targetPackage)
+                if (launchIntent != null) {
+                    launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    executeDirectly(context, launchIntent, "$target öffnen?")
+                    return true
+                }
+            }
+            "send_message" -> {
+                val contact = json.optString("contact", "")
+                val message = json.optString("message", "")
+                
+                if (targetPackage == "com.whatsapp") {
+                    val uriStr = "whatsapp://send?text=${Uri.encode(message)}"
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uriStr))
+                    intent.setPackage(targetPackage)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    executeDirectly(context, intent, "WhatsApp Nachricht senden?")
+                    return true
+                } else {
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        setType("text/plain")
+                        setPackage(targetPackage)
+                        putExtra(Intent.EXTRA_TEXT, message)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    executeDirectly(context, intent, "Nachricht via $target senden?")
+                    return true
+                }
+            }
+        }
+        return false
+    }
 }

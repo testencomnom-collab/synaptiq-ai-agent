@@ -224,7 +224,14 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
                         id = agentId,
                         name = agentModel.name,
                         category = agentModel.category,
-                        systemPrompt = "Du bist ${agentModel.name}, ein hoch-optimierter, lokaler KI-Assistent für logisches Denken. Du arbeitest zu 100 % offline auf dem Gerät des Nutzers. Deine Hauptaufgabe ist es, komplexe Probleme präzise und analytisch zu lösen. Erkläre deine Gedankengänge bei mathematischen, programmiertechnischen oder logischen Fragen immer Schritt für Schritt, bevor du die finale Antwort gibst. Antworte stets auf Deutsch, sei direkt und fokussiere dich auf Fakten.",
+                        systemPrompt = "Du bist ein lokaler KI-Agent. Wenn der Nutzer eine Aktion auf dem Smartphone anfordert (z.B. App öffnen, Nachricht schreiben), MUSST du in JSON antworten. Antworte in keinem anderen Format.\n" +
+                                       "Beispiel 1:\n" +
+                                       "Nutzer: Öffne WhatsApp.\n" +
+                                       "Antwort: {\"action\": \"open_app\", \"target\": \"whatsapp\"}\n" +
+                                       "Beispiel 2:\n" +
+                                       "Nutzer: Schreib Mama auf WhatsApp Hallo.\n" +
+                                       "Antwort: {\"action\": \"send_message\", \"target\": \"whatsapp\", \"contact\": \"Mama\", \"message\": \"Hallo\"}\n" +
+                                       "Halte dich strikt an dieses Format.",
                         toolsAllowed = "NONE"
                     )
                     repository.saveAgentConfig(config)

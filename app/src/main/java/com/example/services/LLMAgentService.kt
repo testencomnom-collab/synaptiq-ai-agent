@@ -117,17 +117,50 @@ class LLMAgentService(
 
         val fullPrompt = "<start_of_turn>user\n${sysPrompt}\n\nUser: $userQuery\n<end_of_turn>\n<start_of_turn>model\n"
 
-        val response = localEngine.generateResponse(fullPrompt)
+        val response = localEngine.generateResponse(fullPrompt).trim()
         val thoughtMsg = if (isApiFallback) {
             "Cloud-API fehlgeschlagen ($fallbackReason). Automatischer Hybrid-Fallback auf 100% Offline-Ausführung."
         } else {
             "PFAD B: 100% Offline-Ausführung. Keine Cloud-APIs oder Netzwerke genutzt."
         }
+
+        var finalResponseText = response
+        var parsedHasAction = false
+        var parsedActionType = "NONE"
+        var parsedSystemApp: String? = null
+        var parsedRecipient: String? = null
+        var parsedInstruction: String? = null
+
+        val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
+        val match = jsonRegex.find(response)
+        
+        if (match != null) {
+            try {
+                val json = JSONObject(match.value)
+                if (json.has("action")) {
+                    com.example.services.ActionHandler.handleLocalAction(context, json)
+                    
+                    val actionName = json.optString("action")
+                    finalResponseText = "Führe lokale Aktion aus: $actionName"
+                    parsedHasAction = true
+                    parsedActionType = "SYSTEM_ACTION"
+                    parsedSystemApp = json.optString("target")
+                    parsedRecipient = json.optString("contact")
+                    parsedInstruction = json.optString("message")
+                }
+            } catch (e: Exception) {
+                // Ignore parsing errors, return plain text
+            }
+        }
+
         return AgentProposal(
             thought = thoughtMsg,
-            responseText = response.trim(),
-            hasAction = false,
-            actionType = "NONE"
+            responseText = finalResponseText,
+            hasAction = parsedHasAction,
+            actionType = parsedActionType,
+            systemActionApp = parsedSystemApp,
+            systemActionRecipient = parsedRecipient,
+            systemActionInstruction = parsedInstruction
         )
     }
 

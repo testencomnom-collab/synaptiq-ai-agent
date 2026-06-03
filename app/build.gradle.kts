@@ -46,7 +46,12 @@ android {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      
+      // FIX: Signatur nur anwenden, wenn der Keystore auf dem System existiert
+      val keystoreFile = file("${rootDir}/release.keystore")
+      if (keystoreFile.exists()) {
+          signingConfig = signingConfigs.getByName("release")
+      }
     }
     debug {
       isDebuggable = false
