@@ -224,7 +224,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
                         id = agentId,
                         name = agentModel.name,
                         category = agentModel.category,
-                        systemPrompt = "You are ${agentModel.name}, a local on-device AI specialist in the field of ${agentModel.category}. Maintain confidence and precision.",
+                        systemPrompt = "Du bist ${agentModel.name}, ein hoch-optimierter, lokaler KI-Assistent für logisches Denken. Du bist direkt und 100% offline auf dem Gerät des Nutzers aktiv. Antworte präzise, analytisch, hilfsbereit und fokussiere dich auf logisch korrekte Lösungen.",
                         toolsAllowed = "NONE"
                     )
                     repository.saveAgentConfig(config)
@@ -264,6 +264,28 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
             }
             preferencesManager.activeLocalAgents = currentSet
             activeAgentsFlow.value = currentSet
+        }
+    }
+
+    fun deleteAgent(agentId: String) {
+        viewModelScope.launch {
+            val agentModel = com.example.data.model.LocalAgentRepository.agents.find { it.id == agentId }
+            if (agentModel != null) {
+                val modelFile = java.io.File(getApplication<Application>().filesDir, agentModel.fileName)
+                if (modelFile.exists()) {
+                    modelFile.delete()
+                }
+            }
+
+            val updatedDownloaded = preferencesManager.downloadedLocalAgents.toMutableSet()
+            updatedDownloaded.remove(agentId)
+            preferencesManager.downloadedLocalAgents = updatedDownloaded
+            downloadedAgentsFlow.value = updatedDownloaded
+
+            val updatedActive = preferencesManager.activeLocalAgents.toMutableSet()
+            updatedActive.remove(agentId)
+            preferencesManager.activeLocalAgents = updatedActive
+            activeAgentsFlow.value = updatedActive
         }
     }
 

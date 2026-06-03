@@ -180,7 +180,8 @@ fun AgentLibraryTab(viewModel: AgentViewModel) {
                         isDownloading = isDownloading,
                         downloadProgress = progress ?: 0f,
                         onDownloadStart = { viewModel.downloadAgent(agent.id) },
-                        onActiveChange = { active -> viewModel.setAgentActive(agent.id, active) }
+                        onActiveChange = { active -> viewModel.setAgentActive(agent.id, active) },
+                        onDeleteAgent = { viewModel.deleteAgent(agent.id) }
                     )
                 }
             }
@@ -196,7 +197,8 @@ fun AgentMarketplaceCard(
     isDownloading: Boolean = false,
     downloadProgress: Float = 0f,
     onDownloadStart: () -> Unit,
-    onActiveChange: (Boolean) -> Unit = {}
+    onActiveChange: (Boolean) -> Unit = {},
+    onDeleteAgent: () -> Unit = {}
 ) {
     val downloadSpeed by remember { mutableStateOf("Download") }
     
@@ -303,6 +305,18 @@ fun AgentMarketplaceCard(
                             ),
                             modifier = Modifier.scale(0.85f)
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(
+                            onClick = onDeleteAgent,
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete Model",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 } else if (!isDownloading) {
                     Box(
@@ -356,7 +370,7 @@ fun AgentMarketplaceCard(
                             )
                         }
                         Text(
-                            text = "$downloadSpeed (2.1GB) via OkHttp...",
+                            text = "Lädt Modell-Gewichte...",
                             fontSize = 10.sp,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
