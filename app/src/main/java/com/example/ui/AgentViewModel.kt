@@ -146,9 +146,15 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
             statusMessage.value = "Initialisiere Download eines echten On-Device Modells..."
             downloadingAgents.value = downloadingAgents.value.toMutableMap().apply { put(agentId, 0f) }
             
-            // Standard MediaPipe Gemma 2B INT4 URL
-            val modelUrl = "https://huggingface.co/metsman/gemma-2b-it-cpu-int4-org/resolve/main/gemma-2b-it-cpu-int4.bin?download=true"
-            val modelFileName = "gemma_2b_it_cpu_int4.bin"
+            val agentModel = com.example.data.model.LocalAgentRepository.agents.find { it.id == agentId }
+            if (agentModel == null) {
+                statusMessage.value = "Error: Agent model not found."
+                downloadingAgents.value = downloadingAgents.value.toMutableMap().apply { remove(agentId) }
+                return@launch
+            }
+            
+            val modelUrl = agentModel.downloadUrl
+            val modelFileName = agentModel.fileName
             val modelFile = java.io.File(getApplication<Application>().filesDir, modelFileName)
             
             var requestSuccess = false
@@ -213,7 +219,6 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
             downloadingAgents.value = downloadingAgents.value.toMutableMap().apply { remove(agentId) }
 
             if (requestSuccess) {
-                val agentModel = com.example.data.model.LocalAgentRepository.agents.find { it.id == agentId }
                 if (agentModel != null) {
                     val config = com.example.data.model.AgentConfigEntity(
                         id = agentId,
@@ -224,7 +229,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
                     )
                     repository.saveAgentConfig(config)
                 }
-                
+
                 withContext(Dispatchers.Main) {
                     val currentSet = preferencesManager.downloadedLocalAgents.toMutableSet()
                     currentSet.add(agentId)
@@ -236,7 +241,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
                     preferencesManager.activeLocalAgents = activeSet
                     activeAgentsFlow.value = activeSet
 
-                    statusMessage.value = "Success! ${agentModel?.name ?: agentId} is now accessing Gemma 2B 100% offline."
+                    statusMessage.value = "Success! ${agentModel.name} is now ready for 100% offline reasoning."
                 }
             } else {
                 withContext(Dispatchers.Main) {

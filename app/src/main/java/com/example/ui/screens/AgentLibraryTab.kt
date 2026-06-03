@@ -208,16 +208,16 @@ fun AgentMarketplaceCard(
     
     // Choose appropriate icon for each agent
     val icon = when (agent.id) {
-        "openhands" -> Icons.Default.Code
-        "goose" -> Icons.Default.Terminal
-        "browseruse" -> Icons.Default.Language
-        "openclaw" -> Icons.Default.Share
-        "crewai" -> Icons.Default.People
-        "autogen" -> Icons.Default.SettingsSuggest
-        "metagpt" -> Icons.Default.Apartment
-        "n8n" -> Icons.AutoMirrored.Filled.AltRoute
-        "langflow" -> Icons.Default.AccountTree
-        "smolagents" -> Icons.Default.Bolt
+        "gemma4_e4b" -> Icons.Default.Bolt
+        "qwen3_4b" -> Icons.Default.Language
+        "llama3_2_3b" -> Icons.Default.SmartToy
+        "phi4" -> Icons.Default.Code
+        "smollm3_3b" -> Icons.Default.Bolt
+        "ministral_3b" -> Icons.Default.SettingsSuggest
+        "deepseek_v4_flash" -> Icons.Default.Terminal
+        "lfm2_5_1_6b" -> Icons.Default.Apartment
+        "mobilellm_flash_1_4b" -> Icons.Default.Share
+        "stable_lm_2_1_6b" -> Icons.Default.AccountTree
         else -> Icons.Default.SmartToy
     }
 

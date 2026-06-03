@@ -95,7 +95,10 @@ class LLMAgentService(
         if (!isLocalEngineReady) {
             localEngineMutex.withLock {
                 if (!isLocalEngineReady) {
-                    isLocalEngineReady = localEngine.initialize()
+                    val activeLocalId = if (!isApiFallback) agentId else preferencesManager.activeLocalAgents.firstOrNull()
+                    val activeAgentModel = com.example.data.model.LocalAgentRepository.agents.find { it.id == activeLocalId }
+                    val modelFileName = activeAgentModel?.fileName ?: "gemma-4-e4b.bin"
+                    isLocalEngineReady = localEngine.initialize(modelFileName)
                 }
             }
         }
@@ -116,9 +119,9 @@ class LLMAgentService(
 
         val response = localEngine.generateResponse(fullPrompt)
         val thoughtMsg = if (isApiFallback) {
-            "Cloud-API fehlgeschlagen ($fallbackReason). Automatischer Hybrid-Fallback auf 100% Offline-Ausführung (Gemma 2B)."
+            "Cloud-API fehlgeschlagen ($fallbackReason). Automatischer Hybrid-Fallback auf 100% Offline-Ausführung."
         } else {
-            "PFAD B: 100% Offline-Ausführung (Gemma 2B). Keine Cloud-APIs oder Netzwerke genutzt."
+            "PFAD B: 100% Offline-Ausführung. Keine Cloud-APIs oder Netzwerke genutzt."
         }
         return AgentProposal(
             thought = thoughtMsg,
