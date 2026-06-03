@@ -170,6 +170,7 @@ class AgentViewModel(application: Application) : AndroidViewModel(application), 
                     
                     if (response.isSuccessful) {
                         val body = response.body
+                        @Suppress("SENSELESS_COMPARISON")
                         if (body != null) {
                             val expectedBytes = body.contentLength()
                             val inputStream = body.byteStream()

@@ -15,6 +15,8 @@ import com.example.data.model.NotificationItem
 import com.example.data.repository.AgentRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -47,6 +49,7 @@ class LLMAgentService(
         private const val TAG = "LLMAgentService"
     }
     private val localEngine by lazy { LocalInferenceEngine(context) }
+    private val localEngineMutex = Mutex()
     private var isLocalEngineReady = false
 
     suspend fun executeAgentQuery(agentId: String, userQuery: String, notificationsContext: List<NotificationItem>): AgentProposal = withContext(Dispatchers.IO) {
@@ -90,7 +93,11 @@ class LLMAgentService(
         Log.d(TAG, "Routing to Local On-Device Mode: $logLabel")
 
         if (!isLocalEngineReady) {
-            isLocalEngineReady = localEngine.initialize()
+            localEngineMutex.withLock {
+                if (!isLocalEngineReady) {
+                    isLocalEngineReady = localEngine.initialize()
+                }
+            }
         }
         if (!isLocalEngineReady) {
             return AgentProposal(
@@ -273,7 +280,7 @@ class LLMAgentService(
                },
                "systemAction": {
                   "targetApp": "App name ('Snapchat', 'WhatsApp', 'Instagram', 'Telegram', 'Discord', 'YouTube', 'Chrome', 'Settings', 'Camera', 'TikTok', 'Spotify', 'flashlight', 'alarm', 'timer', 'search')",
-                  "recipient": "The name of the friend/contact, or empty string if not applicable",
+                  "recipient": "ONLY the exact FIRST NAME or FULL NAME of the contact without any app names or prepositions (e.g. use 'Max' instead of 'Max auf Snapchat'), or empty string if not applicable",
                   "instruction": "The actual message text to send, or the command (e.g. 'on', '5', '10:00'), or empty string if just opening the app"
                },
                "newFactsLearned": ["Fact 1", "Fact 2"] 
@@ -345,16 +352,32 @@ class LLMAgentService(
         }
 
         // Parse response JSON
-        val cleanJson = responseText.trim()
+        var cleanJson = responseText.trim()
             .removePrefix("```json")
             .removeSuffix("```")
             .trim()
+            
+        val jsonStart = cleanJson.indexOf("{")
+        val jsonEnd = cleanJson.lastIndexOf("}")
+        if (jsonStart != -1 && jsonEnd != -1 && jsonEnd >= jsonStart) {
+            cleanJson = cleanJson.substring(jsonStart, jsonEnd + 1)
+        }
 
         if (com.example.BuildConfig.DEBUG) {
             Log.d(TAG, "Full AI Response text: $cleanJson")
         }
 
-        val json = JSONObject(cleanJson)
+        val json = try {
+            JSONObject(cleanJson)
+        } catch (e: Exception) {
+            Log.e(TAG, "JSON Parsing Error on: $cleanJson", e)
+            return AgentProposal(
+                thought = "Error: Invalid AI output format.",
+                responseText = "I encountered an internal error parsing the AI response.",
+                hasAction = false,
+                actionType = "NONE"
+            )
+        }
         val thought = json.optString("thought", "Analyzed user instructions.")
         val responseMsg = json.optString("responseText", "Review drafted proposals below.")
         val hasAction = json.optBoolean("hasAction", false)

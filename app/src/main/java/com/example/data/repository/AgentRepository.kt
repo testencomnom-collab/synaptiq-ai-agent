@@ -11,6 +11,9 @@ import com.example.data.model.AgentConfigEntity
 import com.example.data.database.MemoryDao
 import com.example.data.model.MemoryEntity
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
 class AgentRepository(
     private val chatDao: ChatDao,
     private val notificationDao: NotificationDao,
@@ -23,12 +26,23 @@ class AgentRepository(
         return chatDao.getAllMessages(agentId)
     }
 
+    private val configCache = mutableMapOf<String, AgentConfigEntity>()
+    private val configMutex = Mutex()
+
     suspend fun saveAgentConfig(config: AgentConfigEntity) {
         agentConfigDao.insertConfig(config)
+        configMutex.withLock { configCache[config.id] = config }
     }
 
     suspend fun getAgentConfig(id: String): AgentConfigEntity? {
-        return agentConfigDao.getConfigById(id)
+        configMutex.withLock {
+            if (configCache.containsKey(id)) return configCache[id]
+        }
+        val config = agentConfigDao.getConfigById(id)
+        if (config != null) {
+            configMutex.withLock { configCache[id] = config }
+        }
+        return config
     }
 
     suspend fun insertMessage(message: ChatMessage): Long {
@@ -61,19 +75,30 @@ class AgentRepository(
 
     val allMemoriesFlow: Flow<List<MemoryEntity>> = memoryDao.getMemoriesFlow()
 
+    private var memoryCache: List<MemoryEntity>? = null
+    private val memoryMutex = Mutex()
+
     suspend fun getAllMemories(): List<MemoryEntity> {
-        return memoryDao.getAllMemories()
+        memoryMutex.withLock {
+            if (memoryCache != null) return memoryCache!!
+        }
+        val memories = memoryDao.getAllMemories()
+        memoryMutex.withLock { memoryCache = memories }
+        return memories
     }
 
     suspend fun insertMemory(memory: MemoryEntity) {
         memoryDao.insertMemory(memory)
+        memoryMutex.withLock { memoryCache = null } // Invalidate cache
     }
 
     suspend fun deleteMemory(id: Int) {
         memoryDao.deleteMemoryById(id)
+        memoryMutex.withLock { memoryCache = null } // Invalidate cache
     }
 
     suspend fun clearMemories() {
         memoryDao.clearMemories()
+        memoryMutex.withLock { memoryCache = null } // Invalidate cache
     }
 }

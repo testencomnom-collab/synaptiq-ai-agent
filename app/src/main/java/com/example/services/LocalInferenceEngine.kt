@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package com.example.services
 
 import android.app.ActivityManager

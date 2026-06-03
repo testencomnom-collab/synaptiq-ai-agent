@@ -41,9 +41,9 @@ object ActionHandler {
         }
     }
 
-    private fun getPhoneNumber(context: Context, name: String): String? {
+    private suspend fun getPhoneNumber(context: Context, name: String): String? = withContext(Dispatchers.IO) {
         if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            return null
+            return@withContext null
         }
         val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
         val projection = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
@@ -58,11 +58,11 @@ object ActionHandler {
                     if (cleanNum?.startsWith("00") == true) {
                         cleanNum = "+" + cleanNum.substring(2)
                     }
-                    return cleanNum
+                    return@withContext cleanNum
                 }
             }
         }
-        return null
+        return@withContext null
     }
 
     suspend fun handleCalendarAction(context: Application, json: JSONObject): Boolean {
@@ -121,9 +121,12 @@ object ActionHandler {
         return false
     }
 
-    fun handleSystemAction(context: Application, json: JSONObject): Boolean {
+    suspend fun handleSystemAction(context: Application, json: JSONObject): Boolean {
         val sysApp = json.optString("systemActionApp", "")
-        val sysRecipient = json.optString("recipient", "")
+        var rawRecipient = json.optString("recipient", "")
+        // Robustly clean up the recipient name in case the LLM incorrectly includes the app name or prepositions
+        val cleanupRegex = Regex("(?i)\\b(auf|in|via|bei|on|at|to|für|for|snapchat|whatsapp|insta|instagram|telegram|discord|twitter|facebook)\\b")
+        val sysRecipient = rawRecipient.replace(cleanupRegex, "").replace(Regex("\\s+"), " ").trim()
         val sysInstruction = json.optString("instruction", "")
         val finalInstruction = if (sysInstruction.isEmpty()) json.optString("systemActionInstruction", "") else sysInstruction
 

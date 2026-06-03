@@ -95,7 +95,9 @@
         <service 
             android:name=".services.ContinuousAgentService"
             android:foregroundServiceType="specialUse"
-            android:exported="false" />
+            android:exported="false">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="automation" />
+        </service>
 
     </application>
 

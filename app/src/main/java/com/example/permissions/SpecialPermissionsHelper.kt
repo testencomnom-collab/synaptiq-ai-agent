@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package com.example.permissions
 
 import android.app.AppOpsManager

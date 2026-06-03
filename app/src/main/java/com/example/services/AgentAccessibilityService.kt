@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package com.example.services
 
 import android.accessibilityservice.AccessibilityService
@@ -40,6 +41,8 @@ class AgentAccessibilityService : AccessibilityService() {
         var step = 0
         var searchClicked = false
         var nameTyped = false
+        var startTime = 0L
+        var lastProcessTime = 0L
 
         fun start(app: String, contact: String, startStep: Int) {
             targetApp = app
@@ -47,6 +50,8 @@ class AgentAccessibilityService : AccessibilityService() {
             step = startStep
             searchClicked = false
             nameTyped = false
+            startTime = System.currentTimeMillis()
+            lastProcessTime = 0L
             isRunning = true
             Log.d("AgentAccessibility", "AutomationState started: app=$app, recipient=$contact, step=$startStep")
         }
@@ -58,6 +63,8 @@ class AgentAccessibilityService : AccessibilityService() {
             step = 0
             searchClicked = false
             nameTyped = false
+            startTime = 0L
+            lastProcessTime = 0L
             Log.d("AgentAccessibility", "AutomationState stopped and reset")
         }
     }
@@ -70,32 +77,100 @@ class AgentAccessibilityService : AccessibilityService() {
             val child = node.getChild(i) ?: continue
             val found = findFirstEditText(child)
             if (found != null) {
+                if (found != child) child
                 return found
             }
-            child.recycle()
+            child
         }
         return null
+    }
+
+    private fun performHardwareTap(node: AccessibilityNodeInfo): Boolean {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            val rect = android.graphics.Rect()
+            node.getBoundsInScreen(rect)
+            if (rect.isEmpty) return false
+
+            val path = android.graphics.Path()
+            path.moveTo(rect.centerX().toFloat(), rect.centerY().toFloat())
+            
+            val builder = android.accessibilityservice.GestureDescription.Builder()
+            val stroke = android.accessibilityservice.GestureDescription.StrokeDescription(path, 0, 50)
+            builder.addStroke(stroke)
+            
+            return dispatchGesture(builder.build(), null, null)
+        }
+        return false
+    }
+
+    private fun performTextInjection(node: AccessibilityNodeInfo, text: String): Boolean {
+        node.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
+        node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        
+        // Method 1: Standard SET_TEXT
+        val args = android.os.Bundle().apply {
+            putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text)
+        }
+        var success = node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+        
+        // Method 2: Clipboard PASTE (Fallback)
+        if (!success || node.text?.toString() != text) {
+            try {
+                val clipboard = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = android.content.ClipData.newPlainText("Agent_Automation", text)
+                clipboard.setPrimaryClip(clip)
+                success = node.performAction(AccessibilityNodeInfo.ACTION_PASTE)
+            } catch (e: Exception) {
+                Log.e("AgentAccessibility", "Failed to paste text fallback", e)
+            }
+        }
+        return success
     }
 
     private fun performClickRecursively(node: AccessibilityNodeInfo?): Boolean {
         var current = node
         var depth = 0
-        while (current != null && depth < 6) {
+        var success = false
+        while (current != null && depth < 10) {
             if (current.isClickable) {
-                current.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                return true
+                success = current.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                if (!success) {
+                    success = performHardwareTap(current)
+                }
+                if (current != node) current
+                break
             }
-            current = current.parent
+            val parent = current.parent
+            if (current != node) current
+            current = parent
             depth++
         }
-        return false
+        
+        if (!success && node != null) {
+            success = performHardwareTap(node)
+        }
+        return success
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null || !AutomationState.isRunning) return
 
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - AutomationState.startTime > 15000) {
+            Log.d("AgentAccessibility", "Automation timed out after 15 seconds. Stopping.")
+            AutomationState.stop()
+            return
+        }
+
+        // THROTTLE: Prevent CPU thrashing by limiting heavy view tree traversal to once every 800ms
+        if (currentTime - AutomationState.lastProcessTime < 800) {
+            return
+        }
+        AutomationState.lastProcessTime = currentTime
+
         val rootNode = rootInActiveWindow ?: return
 
+        try {
         // Snapchat specific automation
         if (AutomationState.targetApp == "com.snapchat.android" && event.packageName?.toString() == "com.snapchat.android") {
             if (AutomationState.step == 1) {
@@ -105,10 +180,11 @@ class AgentAccessibilityService : AccessibilityService() {
                 if (friendNodes.isNotEmpty()) {
                     for (friendNode in friendNodes) {
                         if (friendNode.className?.toString()?.contains("EditText") == true) continue
+                        if (friendNode.viewIdResourceName?.contains("search", ignoreCase = true) == true) continue
                         if (performClickRecursively(friendNode)) {
                             AutomationState.step = 2
                             foundAndClicked = true
-                            break
+                            return
                         }
                     }
                 }
@@ -131,10 +207,7 @@ class AgentAccessibilityService : AccessibilityService() {
                     if (searchInputNode != null) {
                         val currentText = searchInputNode.text?.toString() ?: ""
                         if (!currentText.contains(AutomationState.recipient, ignoreCase = true)) {
-                            val args = android.os.Bundle().apply {
-                                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, AutomationState.recipient)
-                            }
-                            searchInputNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                            performTextInjection(searchInputNode, AutomationState.recipient)
                         }
                     }
                 }
@@ -180,7 +253,7 @@ class AgentAccessibilityService : AccessibilityService() {
                         if (performClickRecursively(node)) {
                             AutomationState.step = 2
                             foundAndClicked = true
-                            break
+                            return
                         }
                     }
                 }
@@ -211,6 +284,7 @@ class AgentAccessibilityService : AccessibilityService() {
                     if (searchIconNode != null && !AutomationState.searchClicked) {
                         if (performClickRecursively(searchIconNode)) {
                             AutomationState.searchClicked = true
+                            return
                         }
                     } else if (AutomationState.searchClicked) {
                         var searchInputNode: AccessibilityNodeInfo? = null
@@ -229,10 +303,7 @@ class AgentAccessibilityService : AccessibilityService() {
                         if (searchInputNode != null) {
                             val currentText = searchInputNode.text?.toString() ?: ""
                             if (!currentText.contains(AutomationState.recipient, ignoreCase = true)) {
-                                val args = android.os.Bundle().apply {
-                                    putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, AutomationState.recipient)
-                                }
-                                searchInputNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                                performTextInjection(searchInputNode, AutomationState.recipient)
                             }
                         }
                     }
@@ -285,11 +356,24 @@ class AgentAccessibilityService : AccessibilityService() {
         if (genericApps.contains(AutomationState.targetApp) && event.packageName?.toString() == AutomationState.targetApp) {
             if (AutomationState.step == 1) {
                 val contactNodes = rootNode.findAccessibilityNodeInfosByText(AutomationState.recipient)
+                var foundAndClicked = false
                 if (contactNodes.isNotEmpty()) {
                     for (node in contactNodes) {
+                        if (node.className?.toString()?.contains("EditText") == true) continue
                         if (performClickRecursively(node)) {
                             AutomationState.step = 2
-                            break
+                            foundAndClicked = true
+                            return
+                        }
+                    }
+                }
+                
+                if (!foundAndClicked) {
+                    val searchInputNode = findFirstEditText(rootNode)
+                    if (searchInputNode != null) {
+                        val currentText = searchInputNode.text?.toString() ?: ""
+                        if (!currentText.contains(AutomationState.recipient, ignoreCase = true)) {
+                            performTextInjection(searchInputNode, AutomationState.recipient)
                         }
                     }
                 }
@@ -311,6 +395,9 @@ class AgentAccessibilityService : AccessibilityService() {
                 }
             }
         }
+        } finally {
+            rootNode
+        }
     }
 
     override fun onInterrupt() {
@@ -322,7 +409,7 @@ class AgentAccessibilityService : AccessibilityService() {
         val rootNode = rootInActiveWindow ?: return "[Konnte Bildschirm nicht lesen - kein Root Window]"
         val textList = mutableListOf<String>()
         extractTextRecursively(rootNode, textList)
-        rootNode.recycle()
+        rootNode
         return textList.joinToString(" | ")
     }
 
@@ -340,7 +427,7 @@ class AgentAccessibilityService : AccessibilityService() {
             val child = node.getChild(i)
             if (child != null) {
                 extractTextRecursively(child, textList)
-                child.recycle()
+                child
             }
         }
     }
@@ -349,7 +436,7 @@ class AgentAccessibilityService : AccessibilityService() {
         val rootNode = rootInActiveWindow ?: return false
         val action = if (direction == "SCROLL_DOWN") AccessibilityNodeInfo.ACTION_SCROLL_FORWARD else AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD
         val success = scrollFirstScrollableNode(rootNode, action)
-        rootNode.recycle()
+        rootNode
         return success
     }
 
@@ -361,7 +448,7 @@ class AgentAccessibilityService : AccessibilityService() {
             val child = node.getChild(i)
             if (child != null) {
                 val success = scrollFirstScrollableNode(child, action)
-                child.recycle()
+                child
                 if (success) return true
             }
         }

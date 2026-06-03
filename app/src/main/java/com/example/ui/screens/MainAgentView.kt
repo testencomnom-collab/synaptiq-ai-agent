@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package com.example.ui.screens
 
 import android.Manifest
@@ -1231,7 +1232,7 @@ fun SystemCalendarTab(
 ) {
     val context = LocalContext.current
     var eventList by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
-    var refreshIndicator by remember { mutableStateOf(0) }
+    var refreshIndicator by remember { androidx.compose.runtime.mutableIntStateOf(0) }
 
     var testCreateDialog by remember { mutableStateOf(false) }
     var createTitle by remember { mutableStateOf("") }
